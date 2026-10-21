@@ -1,0 +1,291 @@
+<title>Cartoon Album Study</title>
+<link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=M+PLUS+Rounded+1c:wght@500;900&family=Mochiy+Pop+One&family=Yomogi&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* 共通: 白地と墨 */
+  --white: #ffffff;
+  --ink: #141414;
+  --edge: #d8d8d8;
+  /* 案1 太線フラット: 黄・珊瑚赤・空色の3色 */
+  --f-yellow: #ffd62e;
+  --f-red: #ff5a47;
+  --f-sky: #4fb3ff;
+  --f-skin: #ffdcbd;
+  /* 案2 ゆるい手描き: 灰みの墨 + 水彩の水色とピンク */
+  --h-ink: #3d3c48;
+  --h-blue: #a6d4e4;
+  --h-pink: #f6c0ba;
+  --h-line: #c9c8d0;
+  /* 写真プレースホルダー(明るいトーン) */
+  --p1: linear-gradient(150deg, #ffe9a8, #ffb45e);
+  --p2: linear-gradient(160deg, #cdeeff, #6cc0f5);
+  --p3: linear-gradient(150deg, #ffd3cc, #ff8f86);
+  --p4: linear-gradient(160deg, #d6f5dc, #8fdca0);
+  /* 書体の役割 */
+  --f-pop: "Mochiy Pop One", "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
+  --f-round: "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
+  --f-klee: "Klee One", "Zen Kurenaido", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  --f-note: "Yomogi", "Klee One", "Hiragino Maru Gothic ProN", cursive;
+}
+/* レイアウト: 各案を「誌面」(cqw単位で拡縮する白いカード)に収め、飾りは誌面内で切る。案1は枠とコマ割り、案2は余白と揺れた線 */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--white); color: var(--ink); }
+body { font-family: var(--f-round); font-size: 14px; line-height: 1.6; max-width: 560px; margin: 0 auto; overflow-x: hidden; padding-bottom: env(safe-area-inset-bottom, 0px); }
+[hidden] { display: none !important; }
+button, label { font: inherit; color: inherit; background: transparent; border: 0; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--f-sky); outline-offset: 3px; }
+
+.top { padding: 22px 16px 18px; border-bottom: 3px solid var(--ink); }
+.top h1 { font-family: var(--f-pop); font-size: 26px; font-weight: 400; line-height: 1.2; }
+.top p { font-size: 13px; margin-top: 6px; }
+.toc { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+.toc button, .pick { padding: 11px 8px; border: 2px solid var(--ink); border-radius: 10px; font-weight: 900; font-size: 13px; background: var(--white); }
+.pick { display: block; margin-top: 10px; text-align: center; }
+#photo-input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+#photo-input:focus-visible + label { outline: 3px solid var(--f-sky); outline-offset: 3px; }
+#photo-status { font-size: 12px; margin-top: 6px; }
+.era { scroll-margin-top: 8px; padding-bottom: 12px; }
+.eh { padding: 26px 16px 12px; }
+.eh h2 { font-size: 18px; font-weight: 900; }
+.eh p { font-size: 12px; margin-top: 4px; }
+.cap-l { padding: 0 16px 6px; font-size: 11px; font-weight: 900; letter-spacing: .1em; }
+
+.sheet { position: relative; container-type: inline-size; margin: 0 16px 22px; overflow: hidden; background: var(--white); }
+.im { position: absolute; top: 0; bottom: 0; left: 0; right: 0; background-image: var(--pg, var(--p1)); background-size: cover; background-position: center; }
+.ph { position: relative; overflow: hidden; }
+.abs { position: absolute; }
+
+/* ===== 案1 太線フラット ===== */
+.f .sheet { border: 3px solid var(--ink); border-radius: 14px; box-shadow: 5px 5px 0 var(--ink); font-family: var(--f-round); font-weight: 900; }
+.f-rays { top: -30cqw; left: -30cqw; right: -30cqw; height: 160cqw; background: repeating-conic-gradient(from 0deg at 50% 50%, var(--f-yellow) 0 6deg, var(--white) 6deg 12deg); -webkit-mask-image: radial-gradient(circle, #000 20%, transparent 70%); mask-image: radial-gradient(circle, #000 20%, transparent 70%); }
+.f-title { font-family: var(--f-pop); font-weight: 400; line-height: 1.05; color: var(--white); -webkit-text-stroke: 1.4cqw var(--ink); paint-order: stroke fill; text-shadow: .9cqw .9cqw 0 var(--ink); }
+.f-ep { background: var(--f-red); color: var(--white); border: .9cqw solid var(--ink); font-family: var(--f-pop); font-weight: 400; display: grid; place-items: center; text-align: center; line-height: 1.1; border-radius: 50%; }
+.f-tag { background: var(--ink); color: var(--white); font-size: 3.2cqw; padding: 1.2cqw 3cqw; border-radius: 99px; letter-spacing: .06em; }
+.panels { display: grid; grid-template-columns: 1fr 1fr; gap: 3cqw; padding: 4cqw; }
+.pn { position: relative; border: 3px solid var(--ink); overflow: hidden; border-radius: 4px; background: var(--white); }
+.pn.big { grid-column: 1 / 3; aspect-ratio: 16 / 10; }
+.pn.sq { aspect-ratio: 1 / 1; }
+.pn .lines { position: absolute; top: -50%; bottom: -50%; left: -50%; right: -50%; background: repeating-conic-gradient(from 0deg at 50% 50%, var(--ink) 0 1.2deg, transparent 1.2deg 7deg); -webkit-mask-image: radial-gradient(circle, transparent 28%, #000 75%); mask-image: radial-gradient(circle, transparent 28%, #000 75%); opacity: .55; }
+.sfx { position: absolute; z-index: 3; font-family: var(--f-pop); font-weight: 400; color: var(--f-red); -webkit-text-stroke: 1cqw var(--ink); paint-order: stroke fill; line-height: 1; white-space: nowrap; }
+.bub { position: absolute; z-index: 3; background: var(--white); border: 3px solid var(--ink); border-radius: 50% / 60%; padding: 1.2cqw 3.4cqw; font-size: 3.6cqw; line-height: 1.3; text-align: center; }
+.bub::after { content: ""; position: absolute; left: 22%; bottom: -2.2cqw; width: 3.2cqw; height: 3.2cqw; background: var(--white); border-right: 3px solid var(--ink); border-bottom: 3px solid var(--ink); transform: rotate(45deg) skew(10deg, 10deg); }
+.box { position: absolute; z-index: 3; left: 0; top: 0; background: var(--f-yellow); border-right: 3px solid var(--ink); border-bottom: 3px solid var(--ink); font-size: 3.2cqw; padding: .6cqw 2.2cqw; }
+.f-announce { text-align: center; padding: 12cqw 6cqw 10cqw; background: var(--white); }
+.f-announce .big { position: relative; z-index: 2; font-size: 17cqw; }
+.f-btn { position: relative; z-index: 2; display: inline-block; background: var(--ink); color: var(--white); border: 3px solid var(--ink); border-radius: 14px; box-shadow: 4px 4px 0 var(--f-red); padding: 3cqw 9cqw; font-family: var(--f-pop); font-weight: 400; font-size: 5.2cqw; }
+.f-btn:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--f-red); }
+.f-btn.alt { background: var(--f-yellow); color: var(--ink); box-shadow: 4px 4px 0 var(--ink); }
+.pop { animation: pop 2.4s ease-in-out infinite; transform-origin: center; }
+@keyframes pop { 0%, 100% { transform: rotate(-6deg) scale(1); } 50% { transform: rotate(-3deg) scale(1.08); } }
+.f-buy { padding: 5cqw; display: grid; gap: 5cqw; }
+.f-card { position: relative; border: 3px solid var(--ink); border-radius: 12px; background: var(--white); box-shadow: 4px 4px 0 var(--ink); padding: 4.5cqw; }
+.f-card .name { font-family: var(--f-pop); font-weight: 400; font-size: 5.4cqw; line-height: 1.2; }
+.f-card .price { font-family: var(--f-pop); font-weight: 400; font-size: 11cqw; line-height: 1.1; background: linear-gradient(transparent 62%, var(--f-yellow) 62%); display: inline-block; margin: 1.5cqw 0; }
+.f-card ul { list-style: none; font-size: 3.6cqw; margin-bottom: 4cqw; max-width: 56%; }
+.f-card li::before { content: "● "; color: var(--f-red); }
+.f-card .vis { position: absolute; right: 4cqw; top: 6cqw; width: 28cqw; }
+
+/* ===== 案2 ゆるい手描き ===== */
+.h .sheet { border: 0; box-shadow: 0 0 0 1px var(--edge); font-family: var(--f-klee); font-weight: 400; color: var(--h-ink); }
+.wob { filter: url(#wob); }
+.h-wash { border-radius: 50%; opacity: .55; }
+.h-title { font-family: var(--f-klee); font-weight: 600; line-height: 1.25; color: var(--h-ink); }
+.h-note { font-family: var(--f-note); color: var(--h-ink); }
+.h-frame { border: 2px solid var(--h-ink); background: var(--white); padding: 2cqw; }
+.h-frame .ph { width: 100%; height: 100%; }
+.h-tape { background: var(--h-pink); opacity: .75; width: 18cqw; height: 6cqw; }
+.h-btn { display: inline-block; font-family: var(--f-klee); font-weight: 600; font-size: 5cqw; padding: 2.4cqw 9cqw; color: var(--h-ink); background: var(--white); position: relative; }
+.h-btn::before { content: ""; position: absolute; top: 0; bottom: 0; left: 0; right: 0; border: 2px solid var(--h-ink); border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px; filter: url(#wob); }
+.h-btn:active { background: var(--h-blue); }
+.h-diary-lines { background: repeating-linear-gradient(transparent 0 6.4cqw, var(--h-line) 6.4cqw calc(6.4cqw + 1px)); }
+.h-bob { animation: bob 3.2s ease-in-out infinite; }
+@keyframes bob { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-2cqw) rotate(2deg); } }
+.h-card { position: relative; padding: 6cqw 5cqw 6cqw; margin: 0 0 5cqw; }
+.h-card::before { content: ""; position: absolute; top: 0; bottom: 0; left: 0; right: 0; border: 2px dashed var(--h-ink); border-radius: 20px 6px 18px 8px; filter: url(#wob); pointer-events: none; }
+.h-card .name { font-weight: 600; font-size: 5.4cqw; line-height: 1.3; }
+.h-card .price { font-family: var(--f-note); font-size: 10cqw; line-height: 1.2; position: relative; display: inline-block; padding: 0 3cqw; margin: 1cqw 0; }
+.h-card .price svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; color: var(--h-pink); }
+.h-card ul { list-style: none; font-size: 3.6cqw; margin-bottom: 4cqw; max-width: 58%; }
+.h-card li::before { content: "・"; color: var(--h-ink); }
+.h-card .vis { position: absolute; right: 5cqw; top: 8cqw; width: 26cqw; }
+
+@media (prefers-reduced-motion: reduce) { .pop, .h-bob { animation: none; } }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="wob" x="-5%" y="-5%" width="110%" height="110%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="4" result="t"/>
+    <feDisplacementMap in="SourceGraphic" in2="t" scale="5"/>
+  </filter>
+</svg>
+
+<header class="top">
+  <h1>Cartoon Album Study</h1>
+  <p>白地のカートゥーン調2案。どちらも表紙・中ページ・発刊のお知らせ・購入カードを並べています。</p>
+  <div class="toc">
+    <button type="button" data-to="F">案1 太線フラット</button>
+    <button type="button" data-to="H">案2 ゆるい手描き</button>
+  </div>
+  <input type="file" id="photo-input" accept="image/*" multiple>
+  <label for="photo-input" class="pick">写真を差し込む(端末内のみ)</label>
+  <div id="photo-status"></div>
+</header>
+
+<main>
+<!-- ===== 案1 ===== -->
+<section class="era f" id="era-F">
+  <div class="eh"><h2>案1 太線フラット「ふたりのコミック 第1話」</h2><p>Mochiy Pop One / M PLUS Rounded 1c。黒い太線、黄・珊瑚赤・空色の平塗り、コマ割り・吹き出し・擬音。</p></div>
+
+  <div class="cap-l">1 表紙</div>
+  <div class="sheet" style="aspect-ratio:3/4.2">
+    <div class="abs f-rays"></div>
+    <div class="abs f-tag" style="left:5cqw;top:5cqw;z-index:2">KAZUKI &amp; MISAKI</div>
+    <div class="abs f-ep" style="right:5cqw;top:5cqw;width:22cqw;height:22cqw;font-size:5.6cqw;z-index:2;transform:rotate(8deg)">第1話</div>
+    <div class="abs f-title" style="left:5cqw;top:24cqw;font-size:17cqw;z-index:2">ふたりの<br>コミック</div>
+    <svg class="abs" viewBox="0 0 200 120" style="left:12cqw;right:12cqw;bottom:14cqw;width:76cqw;z-index:2" fill="none" stroke="#141414" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">
+      <circle cx="64" cy="70" r="40" fill="#ffdcbd"/><path d="M26 62 Q30 24 66 26 Q100 26 102 62 Q80 44 56 50 Q40 54 26 62Z" fill="#141414"/>
+      <circle cx="52" cy="72" r="3.5" fill="#141414"/><circle cx="78" cy="72" r="3.5" fill="#141414"/><path d="M54 88 Q65 98 78 88"/>
+      <path d="M52 108 L64 100 L76 108 L64 116Z" fill="#ff5a47"/>
+      <circle cx="140" cy="70" r="40" fill="#ffdcbd"/><path d="M100 70 Q104 22 142 24 Q180 24 182 70 Q170 40 142 42 Q112 42 100 70Z" fill="#ffd62e"/>
+      <circle cx="128" cy="74" r="3.5" fill="#141414"/><circle cx="154" cy="74" r="3.5" fill="#141414"/><path d="M130 90 Q141 100 154 90"/>
+      <path d="M96 30 Q140 -6 186 30 Q190 70 180 100 Q172 60 140 40 Q108 60 100 100 Q92 70 96 30Z" fill="#ffffff" fill-opacity=".85"/>
+      <circle cx="160" cy="34" r="8" fill="#ff5a47"/>
+    </svg>
+    <div class="abs f-tag" style="left:5cqw;bottom:5cqw;z-index:2;background:var(--f-sky);color:var(--ink)">2026.10.25 ・ 82人 ・ 1,204枚</div>
+  </div>
+
+  <div class="cap-l">2 中のページ</div>
+  <div class="sheet">
+    <div class="panels">
+      <div class="pn big">
+        <div class="ph" style="position:absolute;top:0;bottom:0;left:0;right:0"><i class="im" style="--pg:var(--p1)"></i></div>
+        <div class="lines"></div>
+        <span class="box">19:42</span>
+        <span class="sfx pop" style="left:8cqw;bottom:6cqw;font-size:11cqw">カンパーイ!!</span>
+        <span class="bub" style="right:5cqw;top:6cqw">せーのっ!</span>
+      </div>
+      <div class="pn sq">
+        <div class="ph" style="position:absolute;top:0;bottom:0;left:0;right:0"><i class="im" style="--pg:var(--p2)"></i></div>
+        <span class="box">20:30</span>
+        <span class="sfx" style="right:3cqw;bottom:3cqw;font-size:7.5cqw;transform:rotate(-8deg)">ザクッ!</span>
+      </div>
+      <div class="pn sq">
+        <div class="ph" style="position:absolute;top:0;bottom:0;left:0;right:0"><i class="im" style="--pg:var(--p3)"></i></div>
+        <span class="box">21:10</span>
+        <span class="bub" style="left:4cqw;bottom:8cqw">ゆうきより:<br>泣いてた</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cap-l">3 発刊のお知らせ</div>
+  <div class="sheet">
+    <div class="abs f-rays" style="top:-20cqw"></div>
+    <div class="f-announce" style="position:relative">
+      <svg viewBox="0 0 100 80" width="30%" fill="none" stroke="#141414" stroke-width="5" stroke-linejoin="round" aria-hidden="true" style="position:relative;z-index:2"><rect x="6" y="20" width="88" height="54" rx="10" fill="#ffd62e"/><path d="M30 20 L36 8 H64 L70 20" fill="#4fb3ff"/><circle cx="50" cy="47" r="18" fill="#ffffff"/><circle cx="50" cy="47" r="8" fill="#141414"/><circle cx="82" cy="32" r="3" fill="#141414"/></svg>
+      <div class="big f-title" style="margin-top:3cqw">第1話<br>完成!</div>
+      <p style="position:relative;z-index:2;margin:5cqw 0 7cqw;font-size:4cqw"><span style="background:var(--white);padding:0 2cqw">82人が撮った、1,204枚のコミック。</span></p>
+      <button type="button" class="f-btn">読む</button>
+    </div>
+  </div>
+
+  <div class="cap-l">4 購入カード</div>
+  <div class="sheet">
+    <div class="f-buy">
+      <div class="f-card">
+        <div class="name">デジタル版</div><div class="price">¥500</div>
+        <ul><li>高画質</li><li>ずっと残る</li><li>共有リンクつき</li></ul>
+        <svg class="vis" viewBox="0 0 60 100" fill="none" stroke="#141414" stroke-width="4" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="4" width="48" height="92" rx="9" fill="#4fb3ff"/><rect x="13" y="14" width="34" height="62" fill="#ffffff"/><circle cx="30" cy="86" r="4" fill="#ffffff"/></svg>
+        <button type="button" class="f-btn">買う</button>
+      </div>
+      <div class="f-card" style="background:var(--f-yellow)">
+        <div class="name">印刷版<br>フォトブック</div><div class="price" style="background:linear-gradient(transparent 62%, var(--white) 62%)">¥3,000</div>
+        <ul><li>A4サイズ</li><li>32ページ(仮)</li><li>送料込み</li></ul>
+        <svg class="vis" viewBox="0 0 70 100" fill="none" stroke="#141414" stroke-width="4" stroke-linejoin="round" aria-hidden="true"><rect x="14" y="10" width="50" height="84" fill="#ffffff"/><rect x="8" y="6" width="50" height="84" fill="#ff5a47"/><rect x="16" y="16" width="34" height="30" fill="#ffffff"/><path d="M18 62 H48 M18 72 H40"/></svg>
+        <button type="button" class="f-btn alt" style="background:var(--ink);color:var(--white);box-shadow:4px 4px 0 var(--f-red)">買う</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 案2 ===== -->
+<section class="era h" id="era-H">
+  <div class="eh"><h2>案2 ゆるい手描き「ふたりの絵日記」</h2><p>Klee One / Yomogi。揺れた細い線、水彩風の淡い水色とピンク、余白、手書きの落書き。</p></div>
+
+  <div class="cap-l">1 表紙</div>
+  <div class="sheet" style="aspect-ratio:3/4.2">
+    <div class="abs h-wash wob" style="left:-10cqw;top:30cqw;width:80cqw;height:70cqw;background:radial-gradient(circle, var(--h-blue), transparent 70%)"></div>
+    <div class="abs h-wash" style="right:-12cqw;bottom:-8cqw;width:70cqw;height:60cqw;background:radial-gradient(circle, var(--h-pink), transparent 70%)"></div>
+    <div class="abs h-note" style="left:7cqw;top:7cqw;font-size:4.2cqw">vol.1 ・ 2026.10.25</div>
+    <div class="abs h-title" style="left:7cqw;top:14cqw;font-size:13cqw;transform:rotate(-2deg)">ふたりの<br>絵日記</div>
+    <div class="abs wob h-frame" style="left:20cqw;right:7cqw;top:58cqw;height:56cqw;transform:rotate(2.5deg)"><div class="ph"><i class="im" style="--pg:var(--p2)"></i></div></div>
+    <div class="abs h-tape wob" style="left:42cqw;top:55cqw;transform:rotate(-5deg)"></div>
+    <svg class="abs h-bob wob" viewBox="0 0 80 60" style="left:5cqw;top:80cqw;width:24cqw" fill="none" stroke="#3d3c48" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><circle cx="26" cy="34" r="16"/><circle cx="48" cy="30" r="16"/><path d="M26 14 L22 6 L30 8 Z" fill="#a6d4e4"/></svg>
+    <svg class="abs wob" viewBox="0 0 60 60" style="right:6cqw;top:44cqw;width:12cqw" fill="none" stroke="#3d3c48" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M30 52 C6 34 6 12 20 12 C26 12 30 18 30 18 C30 18 34 12 40 12 C54 12 54 34 30 52Z" fill="#f6c0ba"/></svg>
+    <div class="abs h-note" style="left:7cqw;bottom:6cqw;font-size:4cqw;line-height:1.5">Kazuki &amp; Misaki<br>82人が書いた、1,204枚の日記</div>
+  </div>
+
+  <div class="cap-l">2 中のページ</div>
+  <div class="sheet" style="aspect-ratio:1/1.25">
+    <div class="abs" style="left:6cqw;right:6cqw;top:6cqw;display:flex;gap:4cqw;align-items:center;font-size:4.2cqw;font-weight:600">
+      <span>10月25日(日)</span><span class="h-note" style="font-weight:400">てんき</span>
+      <svg viewBox="0 0 40 40" width="9%" fill="none" stroke="#3d3c48" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="20" cy="20" r="8" fill="#f6c0ba"/><path d="M20 3 V8 M20 32 V37 M3 20 H8 M32 20 H37 M8 8 L11 11 M29 29 L32 32 M32 8 L29 11 M8 32 L11 29"/></svg>
+      <span class="h-note" style="margin-left:auto">19:42</span>
+    </div>
+    <div class="abs wob h-frame" style="left:7cqw;right:30cqw;top:20cqw;height:46cqw;transform:rotate(-1.5deg)"><div class="ph"><i class="im" style="--pg:var(--p1)"></i></div></div>
+    <svg class="abs wob" viewBox="0 0 60 40" style="right:6cqw;top:30cqw;width:18cqw" fill="none" stroke="#3d3c48" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 30 C20 6 36 6 50 22 M42 12 L52 23 L38 26"/></svg>
+    <div class="abs h-note" style="right:6cqw;top:46cqw;width:22cqw;font-size:3.6cqw;line-height:1.4;transform:rotate(3deg)">乾杯!<br>みんな笑顔</div>
+    <div class="abs h-diary-lines" style="left:7cqw;right:7cqw;top:72cqw;bottom:6cqw"></div>
+    <p class="abs h-note" style="left:8cqw;right:8cqw;top:73cqw;font-size:4cqw;line-height:6.4cqw">乾杯のしゅんかん、新郎が泣いてた。<br>ゆうきより 「いい日だった!」</p>
+    <svg class="abs wob" viewBox="0 0 60 60" style="right:8cqw;bottom:6cqw;width:10cqw" fill="none" stroke="#3d3c48" stroke-width="2.5" stroke-linejoin="round" aria-hidden="true"><path d="M30 6 L37 22 L54 24 L41 36 L45 54 L30 45 L15 54 L19 36 L6 24 L23 22Z" fill="#a6d4e4"/></svg>
+  </div>
+
+  <div class="cap-l">3 発刊のお知らせ</div>
+  <div class="sheet" style="aspect-ratio:3/3.6">
+    <div class="abs h-wash" style="left:10cqw;top:20cqw;width:80cqw;height:60cqw;background:radial-gradient(circle, var(--h-blue), transparent 70%)"></div>
+    <svg class="abs h-bob wob" viewBox="0 0 100 70" style="left:30cqw;top:10cqw;width:40cqw" fill="none" stroke="#3d3c48" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="6" y="10" width="88" height="54" rx="3" fill="#ffffff"/><path d="M6 12 L50 42 L94 12"/><path d="M50 4 C44 -2 36 6 50 16 C64 6 56 -2 50 4Z" fill="#f6c0ba"/></svg>
+    <div class="abs h-title" style="left:0;right:0;top:50cqw;text-align:center;font-size:9cqw">絵日記が<br>とどきました</div>
+    <p class="abs h-note" style="left:0;right:0;top:78cqw;text-align:center;font-size:4cqw">Kazuki &amp; Misaki ・ 82人ぶん</p>
+    <div class="abs" style="left:0;right:0;bottom:7cqw;text-align:center"><button type="button" class="h-btn">ひらく</button></div>
+  </div>
+
+  <div class="cap-l">4 購入カード</div>
+  <div class="sheet" style="padding:6cqw 5cqw 1cqw">
+    <div class="h-card">
+      <div class="name">デジタル版</div>
+      <div class="price"><svg class="wob" viewBox="0 0 100 40" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><ellipse cx="50" cy="20" rx="46" ry="16"/></svg>¥500</div>
+      <ul><li>高画質</li><li>ずっと残る</li><li>共有リンクつき</li></ul>
+      <svg class="vis wob" viewBox="0 0 60 100" fill="none" stroke="#3d3c48" stroke-width="2.5" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="4" width="44" height="90" rx="9" fill="#a6d4e4"/><rect x="14" y="14" width="32" height="60" fill="#ffffff"/></svg>
+      <button type="button" class="h-btn">買う</button>
+    </div>
+    <div class="h-card">
+      <div class="name">印刷版フォトブック</div>
+      <div class="price"><svg class="wob" viewBox="0 0 100 40" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><ellipse cx="50" cy="20" rx="46" ry="16"/></svg>¥3,000</div>
+      <ul><li>A4サイズ</li><li>32ページ(仮)</li><li>送料込み</li></ul>
+      <svg class="vis wob" viewBox="0 0 70 100" fill="none" stroke="#3d3c48" stroke-width="2.5" stroke-linejoin="round" aria-hidden="true"><rect x="14" y="10" width="48" height="82" fill="#ffffff"/><rect x="8" y="6" width="48" height="82" fill="#f6c0ba"/><rect x="16" y="16" width="32" height="28" fill="#ffffff"/><path d="M18 58 H46 M18 68 H38"/></svg>
+      <button type="button" class="h-btn">買う</button>
+    </div>
+  </div>
+</section>
+</main>
+
+<script>
+(function () {
+  document.querySelectorAll('[data-to]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var el = document.getElementById('era-' + b.getAttribute('data-to'));
+      if (el) el.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    });
+  });
+  var urls = [];
+  document.getElementById('photo-input').addEventListener('change', function (e) {
+    var files = Array.prototype.slice.call(e.target.files || []).filter(function (f) { return /^image\//.test(f.type); });
+    if (!files.length) return;
+    urls.forEach(function (u) { URL.revokeObjectURL(u); });
+    urls = files.map(function (f) { return URL.createObjectURL(f); });
+    document.querySelectorAll('.im').forEach(function (el, i) {
+      el.style.backgroundImage = 'url("' + urls[i % urls.length] + '")';
+    });
+    document.getElementById('photo-status').textContent = files.length + '枚を差し込みました(端末内のみ)';
+  });
+})();
+</script>
