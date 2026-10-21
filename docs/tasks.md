@@ -7,7 +7,14 @@
 | T0 | アルバム・購入画面のビジュアルモック（HTML） | frontend-dev | - | 確認待ち |
 | T0b | カメラ画面3案と、ゲストの画面の流れのモック | frontend-dev | T0 | 完了（A に決定） |
 | T0c | カジュアル・ラフ案のモック（雑誌案と切り替え） | frontend-dev | T0b | 完了（要素だけ取り込む） |
-| T0d | 古いファッション雑誌の年代4案（比較用のイメージ） | frontend-dev | T0c | 確認待ち |
+| T0d | 古いファッション雑誌の年代4案（比較用のイメージ） | frontend-dev | T0c | 完了（全案却下） |
+| T0e | カートゥーン調2案（比較用のイメージ） | frontend-dev | - | 進行中 |
+| T1 | API・D1・R2（イベント・撮影・現像・アルバム・注文） | backend-dev | - | 進行中 |
+| T2 | フロントの土台とゲストのカメラ画面（実カメラ・巻き上げ・アップロード） | frontend-dev | T1 の API 仕様 | 進行中 |
+| T3 | ホスト画面（作成・QR・管理・現像・写真一覧と一括DL） | frontend-dev | T1, T2 | 未着手 |
+| T4 | 現像待ち・発刊のお知らせ・アルバム・購入・完了の画面（選ばれたスタイルで） | frontend-dev | T0e の決定, T2 | 未着手 |
+| T5 | 通しの動作確認とテスト | qa-tester | T3, T4 | 未着手 |
+| T6 | レビュー | reviewer | T3, T4 | 未着手 |
 
 ---
 
@@ -59,3 +66,55 @@
   - 写真の差し込みができる。幅375pxで横スクロールが出ない
 - 触ってよい範囲: `web/mock/`
 - 結果メモ: 2026-10-21 作成。Artifact として公開: https://claude.ai/artifact/EtzQ99Mo6esjVopkcNAd4C 。架空の誌名（VEIL / DAZZLE / ハレノヒ / moment/s）。ブラウザでの実表示は未検証。Kazuki が年代を選ぶのを待っている
+
+## T0e: カートゥーン調2案（比較用のイメージ）
+- 担当: frontend-dev
+- 依存: なし
+- 目的（brief の項目）: デザインの方針。白基調のカートゥーン調を「太線フラット」と「ゆるい手描き」で比べる
+- 完了条件:
+  - `web/mock/cartoon-study.html` に2案が並び、各案に「アルバムの表紙」「中のページ1つ」「発刊のお知らせ」「購入カード」がある
+  - 白が基調。写真の差し込みができる。幅375pxで横スクロールが出ない
+- 触ってよい範囲: `web/mock/cartoon-study.html` の新規作成のみ
+- 結果メモ:
+
+---
+
+## API 仕様（T1 で実装し、T2 以降が使う）
+ベースパス: `/api`。JSON で返す。ホスト用の操作は `Authorization: Bearer <hostToken>` が必要。ゲストは、端末で作った UUID（`guestId`）で識別する。
+
+| メソッドとパス | 用途 | 返り値・エラー |
+| --- | --- | --- |
+| `POST /api/events` `{name, shotLimit?}` | イベント作成（shotLimit の既定値は 27） | 201 `{id, hostToken, name, shotLimit}` |
+| `GET /api/events/:id` | イベント情報 | 200 `{id, name, shotLimit, status: "shooting"\|"published", publishedAt, stats:{guests, photos}}` |
+| `GET /api/events/:id/guests/:guestId` | 残り枚数 | 200 `{taken, remaining}` |
+| `POST /api/events/:id/shots` `{guestId}` | 1枚分の枠を確保し、アップロード先を発行 | 201 `{photoId, uploadUrl, expiresAt, remaining}`。上限に達していたら 409、現像後なら 403 |
+| `PUT /api/uploads/:photoId?exp=&sig=` （本体は画像） | 署名付きURLへの直接アップロード。R2 に保存 | 204。署名が不正なら 403、期限切れなら 410 |
+| `POST /api/events/:id/publish`（ホスト） | 現像（発刊）。アルバムを確定する | 200 `{status:"published", publishedAt}` |
+| `GET /api/events/:id/album` | アルバム（現像後のみ） | 200 `{event, stats, pages:[{layout, photos:[{id, url, takenAt}]}]}`。現像前は 403 |
+| `GET /api/photos/:photoId` | 画像本体 | 現像後は誰でも取得できる。現像前はホストのみ |
+| `GET /api/events/:id/photos`（ホスト） | 写真一覧（現像前でも取得できる） | 200 `{photos:[{id, url, takenAt, guestId}]}` |
+| `POST /api/events/:id/orders` `{guestId, product:"digital"\|"print"}` | 購入（モック） | 201 `{orderId, product, amount, status:"paid_mock"}` |
+
+## T1: API・D1・R2
+- 担当: backend-dev
+- 依存: なし
+- 目的（brief の項目）: 必須の機能すべての土台
+- 完了条件:
+  - `cd api && npx wrangler dev --local` で起動する
+  - 上の API 仕様のとおりに動くことを、curl で確認できる（作成 → 枠を確保 → PUT → 現像 → アルバム取得 → 注文。上限で 409、現像前のアルバムで 403）
+  - D1 のマイグレーションがあり、ローカルに適用できる
+  - CORS で、ローカルのフロント（http://localhost:5173）から呼べる
+- 触ってよい範囲: `api/`
+- 結果メモ:
+
+## T2: フロントの土台とゲストのカメラ画面
+- 担当: frontend-dev
+- 依存: T1 の API 仕様（実装の完了は待たない。モックのクライアントで先に進めてよい）
+- 目的（brief の項目）: 成功の体験 2（QR から3タップ以内に1枚目）
+- 完了条件:
+  - `web/app/` に Vite + React + TypeScript の PWA があり、`npm run dev` で起動する
+  - `/e/:eventId` を開くとカメラの全画面（A）が出る。カメラの許可 → シャッターで1枚目が撮れる（3タップ以内）
+  - シャッター → 暗転 → カウンター減 → 巻き上げのスワイプ → 次の撮影、が動く。撮った画像は API 経由で R2 にアップロードされる
+  - 撮り切る、または現像されると、それぞれの画面（現像待ち／仮のアルバムへのリンク）に移る
+- 触ってよい範囲: `web/app/`
+- 結果メモ:
