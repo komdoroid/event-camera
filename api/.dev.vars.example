@@ -1,0 +1,3 @@
+UPLOAD_SIGNING_SECRET=
+# カンマ区切り。http://localhost:5173 は常に許可される
+ALLOWED_ORIGINS=

@@ -1,0 +1,16 @@
+name = "event-camera-api"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+[vars]
+ALLOWED_ORIGINS = ""
+
+[[d1_databases]]
+binding = "DB"
+database_name = "event-camera"
+database_id = "00000000-0000-0000-0000-000000000000" # ローカル用ダミー。本番は Kazuki が d1 create 後に差し替え
+migrations_dir = "migrations"
+
+[[r2_buckets]]
+binding = "PHOTOS"
+bucket_name = "event-camera-photos"

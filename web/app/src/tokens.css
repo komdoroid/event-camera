@@ -1,0 +1,14 @@
+/* デザイントークン。色・書体はここだけで差し替える */
+:root {
+  --paper: #fcfcfa;
+  --ink: #15171c;
+  --mute: #6b6f78;
+  --rule: #d9dadd;
+  --accent: #2a3fd0;
+  --night: #0b0c0f;
+  --night-ink: #f3f3ef;
+  --night-mute: #8d919a;
+  --f-display: "Bodoni Moda", "Didot", "Bodoni 72", "Times New Roman", serif;
+  --f-body: "Hiragino Sans", "Yu Gothic", "Noto Sans JP", sans-serif;
+  --f-label: "Hiragino Sans", "Noto Sans JP", "Yu Gothic", "Helvetica Neue", Arial, sans-serif;
+}

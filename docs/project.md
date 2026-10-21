@@ -23,8 +23,10 @@
 
 ## 開発コマンド
 - API起動（ローカル）: `cd api && npx wrangler dev --local`
-- DBマイグレーション（ローカル）: `cd api && npx wrangler d1 migrations apply <DB名> --local`
-- フロント起動・テスト: 技術スタック確定後に追記
+- DBマイグレーション（ローカル）: `cd api && npx wrangler d1 migrations apply event-camera --local`
+- フロント起動: `cd web/app && npm install && npm run dev`（API なしで試すときは `VITE_USE_MOCK_API=1`）
+- フロントのテスト・型チェック・ビルド: `cd web/app && npm test && npm run typecheck && npm run build`
+- API の型チェック: `cd api && npx tsc --noEmit`
 
 ## デプロイ
 - フロントエンド・API ともに Cloudflare にデプロイする（フロントは Cloudflare Pages、API は Workers）
