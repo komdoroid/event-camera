@@ -1,0 +1,37 @@
+{
+  "env": {
+    "CLAUDE_CODE_FORK_SUBAGENT": "0"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(npx wrangler dev *)",
+      "Bash(npx wrangler d1 execute * --local *)",
+      "Bash(npx wrangler d1 migrations create *)",
+      "Bash(npx wrangler d1 migrations apply * --local *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(curl *localhost*)"
+    ],
+    "ask": [
+      "Bash(npx wrangler deploy *)",
+      "Bash(npx wrangler d1 migrations apply * --remote *)",
+      "Bash(npx wrangler d1 execute * --remote *)",
+      "Bash(npx wrangler secret *)",
+      "Bash(npx wrangler r2 *)",
+      "Bash(git push *)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(git push --force *)",
+      "Bash(git reset --hard *)",
+      "Read(./.env)",
+      "Read(./**/.env)",
+      "Read(./**/.dev.vars)"
+    ]
+  }
+}
