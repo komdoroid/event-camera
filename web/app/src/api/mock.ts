@@ -33,6 +33,12 @@ export const mockApi: Api = {
     const id = uid();
     const e = ensure(id);
     e.name = name; e.shotLimit = shotLimit ?? 27;
+    // ホスト画面の確認用ダミー写真
+    const hues = [10, 50, 120, 190, 250, 310];
+    e.photos = hues.map((h, i) => ({
+      id: uid(), guestId: `dummy-${i % 2}`, takenAt: new Date().toISOString(),
+      blob: new Blob([`<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="400" height="400" fill="hsl(${h} 60% 70%)"/><text x="200" y="230" font-size="120" text-anchor="middle" fill="#fff">${i + 1}</text></svg>`], { type: 'image/svg+xml' }),
+    }));
     return { id, hostToken: e.hostToken, name, shotLimit: e.shotLimit };
   },
   async getEvent(id) { await wait(); return pub(ensure(id)); },

@@ -12,3 +12,18 @@
   --f-body: "Hiragino Sans", "Yu Gothic", "Noto Sans JP", sans-serif;
   --f-label: "Hiragino Sans", "Noto Sans JP", "Yu Gothic", "Helvetica Neue", Arial, sans-serif;
 }
+
+/* ホスト画面（白基調）。カートゥーン調に寄せるときはここを差し替える */
+:root {
+  --page-bg: #ffffff;
+  --page-ink: #15171c;
+  --page-mute: #6b6f78;
+  --page-line: #15171c;
+  --page-soft: #f3f4f6;
+  --line-w: 2px;
+  --radius: 12px;
+  --f-heading: var(--f-body);
+  --btn-bg: var(--accent);
+  --btn-ink: #ffffff;
+  --danger: #c62828;
+}
