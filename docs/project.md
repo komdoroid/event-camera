@@ -7,7 +7,7 @@
 - 期限: 2026-10-25（日）
 
 ## 技術スタック
-- フロントエンド: 未定（メインエージェントがヒアリングで確認する）
+- フロントエンド: Vite + React（PWA）。2026-10-21 のヒアリングで決定（docs/brief.md）
 - バックエンド: Cloudflare Workers（TypeScript）
 - DB: Cloudflare D1
 - ストレージ: Cloudflare R2（写真は署名付きURLでクライアントから直接アップロード）
@@ -25,6 +25,11 @@
 - API起動（ローカル）: `cd api && npx wrangler dev --local`
 - DBマイグレーション（ローカル）: `cd api && npx wrangler d1 migrations apply <DB名> --local`
 - フロント起動・テスト: 技術スタック確定後に追記
+
+## デプロイ
+- フロントエンド・API ともに Cloudflare にデプロイする（フロントは Cloudflare Pages、API は Workers）
+- デモはスマホから開ける Cloudflare の URL（*.pages.dev / *.workers.dev）で見せる
+- デプロイ作業は Kazuki の確認を取ってから行う
 
 ## 対応デバイス
 - スマートフォンのブラウザ優先（ゲストはQRコードから開いて撮影する想定）
