@@ -1,0 +1,247 @@
+<title>Wedding Issue Eras</title>
+<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Anton&family=Archivo+Narrow:wght@400;600&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,700;1,6..96,400&family=Courier+Prime:wght@400;700&family=Kaisei+Decol:wght@700&family=Yomogi&family=Zen+Old+Mincho:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* ページ全体(比較用の台紙) */
+  --page: #ddd2b6;
+  --page-ink: #1d1a16;
+  --page-edge: #b9ac8a;
+  /* 古さの共通表現: 紙のざらつき(feTurbulence)。各案が multiply で重ねる */
+  --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .35  0 0 0 0 .27  0 0 0 0 .14  0 0 0 .6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  /* A 50-60s: 黄ばんだ象牙色 + 墨 + 深い赤茶 */
+  --a-paper: #efe4c9; --a-ink: #1c1a17; --a-acc: #7d2a22; --a-shadow: #c9b68e; --a-vig: #c7b283; --a-dot: #1c1a17; --a-edge: #b9ac8a;
+  /* B 70-80s: 赤・黄・青の色面 */
+  --b-paper: #e0452d; --b-ink: #1a1613; --b-acc: #ffd23a; --b-acc2: #1f3fa8; --b-shadow: #1f3fa8; --b-vig: #8f3a1c; --b-dot: #1a1613; --b-edge: #9a5a3a;
+  /* C 80-90s 和雑誌: 黄ばんだ紙 + ピンク + 青緑 */
+  --c-paper: #efe2c4; --c-ink: #231d1a; --c-acc: #d9567a; --c-acc2: #2b8f8c; --c-shadow: #f2a7bd; --c-vig: #bfa77a; --c-dot: #d9567a; --c-edge: #b9ac8a;
+  /* D 90s ミニマル: 灰みの黄ばみ紙 + 墨 + 朱1点 */
+  --d-paper: #e6dfca; --d-ink: #181816; --d-acc: #e5391f; --d-shadow: #b9b2a0; --d-vig: #b3aa8e; --d-dot: #181816; --d-edge: #b9ac8a;
+  /* 写真プレースホルダー(人物風シルエットの肌・服・背景) */
+  --sk: #d9a98a; --suit: #3a3a46; --gA: #9d9684; --gB: #3c3a38; --gC: #d8b88a; --gD: #5b6f8a; --gE: #c8d0c0; --gF: #6e4b4b;
+  /* 書体の役割 */
+  --f-ui: "Archivo Narrow", "Helvetica Neue", Arial, sans-serif;
+  --f-bodoni: "Bodoni Moda", "Didot", "Bodoni 72", "Times New Roman", serif;
+  --f-mincho: "Zen Old Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  --f-abril: "Abril Fatface", "Bodoni Moda", "Didot", serif;
+  --f-anton: "Anton", "Impact", "Arial Narrow", sans-serif;
+  --f-decol: "Kaisei Decol", "Zen Old Mincho", "Hiragino Mincho ProN", serif;
+  --f-hand: "Yomogi", "Hiragino Maru Gothic ProN", "Yu Gothic", cursive;
+  --f-mono: "Courier Prime", "Courier New", monospace;
+}
+/* レイアウト: 各案は幅いっぱいの「誌面」(cqw単位で全体を拡縮)。文字・写真は誌面内に絶対配置し、はみ出しは誌面で切る */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--page); color: var(--page-ink); }
+body { font-family: var(--f-ui); font-size: 14px; line-height: 1.6; max-width: 560px; margin: 0 auto; overflow-x: hidden; padding-bottom: env(safe-area-inset-bottom, 0px); }
+[hidden] { display: none !important; }
+button, label { font: inherit; color: inherit; background: transparent; border: 0; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--b-acc2); outline-offset: 3px; }
+
+.top { padding: 22px 16px 18px; border-bottom: 1px solid var(--page-ink); margin-bottom: 8px; }
+.top h1 { font-family: var(--f-bodoni); font-size: 32px; font-weight: 700; line-height: 1; }
+.top p { margin-top: 8px; font-size: 13px; }
+.toc { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 14px; }
+.toc button, .pick { padding: 10px 8px; border: 1px solid var(--page-ink); font-family: var(--f-ui); font-size: 13px; text-align: left; background: var(--page); }
+.pick { display: block; margin-top: 10px; text-align: center; font-weight: 600; }
+#photo-input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+#photo-input:focus-visible + label { outline: 2px solid var(--b-acc2); outline-offset: 3px; }
+#photo-status { font-size: 12px; margin-top: 6px; }
+
+.era { padding-bottom: 8px; scroll-margin-top: 8px; }
+.eh { padding: 26px 16px 12px; }
+.eh h2 { font-family: var(--f-ui); font-weight: 600; font-size: 18px; border-bottom: 1px solid var(--page-ink); padding-bottom: 6px; }
+.eh p { font-size: 12px; margin-top: 6px; }
+
+/* 誌面(共通): 黄ばみ紙 + ざらつき + 周辺の焼け */
+.sheet { position: relative; container-type: inline-size; margin: 0 16px 24px; overflow: hidden; background: var(--paper); color: var(--ink); box-shadow: 0 0 0 1px var(--edge), 3px 5px 0 var(--edge); isolation: isolate; }
+.sheet::before { content: ""; position: absolute; top: 0; bottom: 0; left: 0; right: 0; background-image: var(--grain); mix-blend-mode: multiply; opacity: var(--grain-op, .75); pointer-events: none; z-index: 50; }
+.sheet::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; right: 0; box-shadow: inset 0 0 12cqw var(--vig); pointer-events: none; z-index: 51; }
+.sheet > * { position: absolute; }
+.sheet .photo { overflow: hidden; background: var(--paper); }
+.im { position: absolute; top: 0; bottom: 0; left: 0; right: 0; background-size: cover; background-position: center; filter: var(--pf);
+  background-image: radial-gradient(ellipse 20% 13% at 50% 33%, var(--sk) 96%, transparent), radial-gradient(ellipse 46% 36% at 50% 84%, var(--suit) 96%, transparent), linear-gradient(170deg, var(--ga, var(--gA)), var(--gb, var(--gB))); }
+.photo::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; right: 0; background: radial-gradient(circle at center, var(--dot) 0 28%, transparent 34%) 0 0 / var(--ds, 1.5cqw) var(--ds, 1.5cqw); mix-blend-mode: multiply; opacity: var(--ho, .35); pointer-events: none; }
+.mis { text-shadow: var(--mis, .6cqw .5cqw 0 var(--shadow)); }
+
+/* A */
+.eA { --paper: var(--a-paper); --ink: var(--a-ink); --acc: var(--a-acc); --shadow: var(--a-shadow); --vig: var(--a-vig); --dot: var(--a-dot); --edge: var(--a-edge); --pf: grayscale(1) contrast(1.15) brightness(1.04); --ho: .22; --mis: .5cqw .4cqw 0 var(--a-shadow); }
+.eA .t { font-family: var(--f-bodoni); }
+.a-top { left: 6cqw; right: 6cqw; top: 5cqw; display: flex; justify-content: space-between; font-family: var(--f-bodoni); font-size: 2.6cqw; letter-spacing: .18em; }
+.a-mast { left: 0; right: 0; top: 10cqw; text-align: center; font-family: var(--f-bodoni); font-weight: 400; font-size: 31cqw; line-height: 1; letter-spacing: -.01em; }
+.a-ph { left: 24cqw; right: 24cqw; top: 50cqw; bottom: 25cqw; }
+.a-cap { left: 0; right: 0; bottom: 11cqw; text-align: center; font-family: var(--f-bodoni); font-size: 3.4cqw; line-height: 1.5; }
+.a-cap em { color: var(--acc); }
+.a-foot { left: 0; right: 0; bottom: 5cqw; text-align: center; font-family: var(--f-bodoni); font-size: 2.4cqw; letter-spacing: .2em; text-transform: uppercase; }
+.a-h { left: 6cqw; top: 15cqw; font-family: var(--f-bodoni); font-style: italic; font-weight: 400; font-size: 13cqw; line-height: .95; width: 60cqw; }
+.a-body { left: 6cqw; top: 55cqw; width: 28cqw; font-family: var(--f-mincho); font-size: 3.1cqw; line-height: 1.9; }
+.a-ph2 { left: 40cqw; right: 6cqw; top: 38cqw; bottom: 22cqw; }
+.a-c2 { left: 40cqw; right: 6cqw; bottom: 14cqw; font-family: var(--f-bodoni); font-style: italic; font-size: 2.8cqw; }
+
+/* B */
+.eB { --paper: var(--b-paper); --ink: var(--b-ink); --shadow: var(--b-shadow); --vig: var(--b-vig); --dot: var(--b-dot); --edge: var(--b-edge); --pf: saturate(1.45) contrast(1.12) sepia(.25) hue-rotate(-8deg); --ho: .45; --ds: 1.1cqw; --mis: .8cqw .7cqw 0 var(--b-shadow); --grain-op: .9; }
+.b-mast { left: 5cqw; top: 3cqw; font-family: var(--f-abril); font-size: 22cqw; line-height: 1; color: var(--b-acc); }
+.b-band { left: 0; right: 0; top: 27cqw; background: var(--b-ink); color: var(--b-acc); font-family: var(--f-anton); font-size: 3.4cqw; letter-spacing: .12em; padding: 1cqw 5cqw; z-index: 3; }
+.b-ph { left: 0; right: 0; top: 33cqw; bottom: 0; }
+.b-cl { z-index: 4; font-family: var(--f-anton); line-height: 1.05; text-transform: uppercase; padding: .6cqw 2.2cqw; }
+.b-cl1 { left: 5cqw; top: 44cqw; font-size: 10cqw; background: var(--b-acc); color: var(--b-ink); transform: rotate(-3deg); }
+.b-cl2 { left: 8cqw; top: 58cqw; font-size: 10cqw; background: var(--b-acc2); color: var(--b-acc); transform: rotate(2deg); }
+.b-cl3 { left: 5cqw; top: 76cqw; font-size: 4.6cqw; color: var(--b-acc); text-shadow: .4cqw .4cqw 0 var(--b-ink); padding: 0; }
+.b-cl4 { left: 5cqw; bottom: 6cqw; width: 58cqw; font-size: 4cqw; color: #fff; color: var(--b-acc); text-shadow: .4cqw .4cqw 0 var(--b-ink); padding: 0; line-height: 1.25; }
+.b-burst { right: 4cqw; bottom: 6cqw; width: 30cqw; height: 30cqw; background: var(--b-acc); color: var(--b-ink); display: grid; place-items: center; text-align: center; font-family: var(--f-anton); font-size: 9cqw; line-height: 1; clip-path: polygon(50% 0, 60% 14%, 75% 6%, 78% 22%, 94% 25%, 86% 40%, 100% 50%, 86% 60%, 94% 75%, 78% 78%, 75% 94%, 60% 86%, 50% 100%, 40% 86%, 25% 94%, 22% 78%, 6% 75%, 14% 60%, 0 50%, 14% 40%, 6% 25%, 22% 22%, 25% 6%, 40% 14%); z-index: 4; transform: rotate(8deg); }
+.b-burst small { display: block; font-size: 3.2cqw; letter-spacing: .1em; }
+.eB .inner { --paper: var(--b-acc); }
+.b-ph2 { left: 0; right: 14cqw; top: 0; bottom: 40cqw; }
+.b-do { left: 4cqw; bottom: 22cqw; font-family: var(--f-anton); font-size: 33cqw; line-height: 1; color: #fff; color: var(--b-paper); z-index: 4; }
+.b-box { left: 4cqw; right: 18cqw; bottom: 5cqw; background: var(--b-acc2); color: var(--b-acc); padding: 2cqw 3cqw; font-family: var(--f-abril); font-size: 5cqw; line-height: 1.2; z-index: 4; }
+.b-box small { display: block; font-family: var(--f-anton); font-size: 3cqw; letter-spacing: .1em; margin-top: 1cqw; color: var(--b-acc); }
+.b-side { right: 3cqw; top: 3cqw; bottom: 3cqw; width: 8cqw; writing-mode: vertical-rl; font-family: var(--f-anton); font-size: 6.4cqw; letter-spacing: .08em; color: var(--b-paper); z-index: 4; }
+
+/* C */
+.eC { --paper: var(--c-paper); --ink: var(--c-ink); --acc: var(--c-acc); --shadow: var(--c-shadow); --vig: var(--c-vig); --dot: var(--c-dot); --edge: var(--c-edge); --pf: sepia(.35) saturate(.85) contrast(.95) brightness(1.06); --ho: .3; --ds: 1.3cqw; --mis: .5cqw .5cqw 0 var(--c-shadow); }
+.c-ph { left: 0; top: 0; width: 63cqw; bottom: 24cqw; }
+.c-mast { right: 5cqw; top: 4cqw; writing-mode: vertical-rl; font-family: var(--f-decol); font-weight: 700; font-size: 17cqw; line-height: 1.05; color: var(--c-acc); letter-spacing: .02em; }
+.c-en { right: 22cqw; top: 6cqw; writing-mode: vertical-rl; font-family: var(--f-ui); font-size: 3cqw; letter-spacing: .3em; }
+.c-note { left: 0; right: 0; bottom: 0; height: 24cqw; background: var(--c-acc2); color: var(--c-paper); padding: 3cqw 5cqw; font-family: var(--f-mincho); font-size: 2.8cqw; line-height: 1.7; z-index: 3; }
+.c-hand { left: 40cqw; bottom: 17cqw; z-index: 5; font-family: var(--f-hand); font-size: 7cqw; color: var(--c-ink); transform: rotate(-6deg); background: var(--c-paper); padding: .5cqw 2.4cqw; border: .5cqw solid var(--c-ink); }
+.c-sticker { left: 3cqw; top: 4cqw; z-index: 5; width: 20cqw; height: 20cqw; border-radius: 50%; background: var(--c-acc); color: var(--c-paper); display: grid; place-items: center; text-align: center; font-family: var(--f-decol); font-size: 3.4cqw; line-height: 1.25; transform: rotate(-12deg); }
+.c-price { right: 5cqw; bottom: 28cqw; font-family: var(--f-mincho); font-size: 3.2cqw; writing-mode: vertical-rl; font-weight: 700; }
+.c-ph2 { left: 5cqw; top: 6cqw; width: 52cqw; height: 58cqw; }
+.c-ph3 { left: 24cqw; top: 70cqw; width: 36cqw; height: 36cqw; transform: rotate(3deg); }
+.c-h { right: 5cqw; top: 6cqw; writing-mode: vertical-rl; font-family: var(--f-decol); font-weight: 700; font-size: 11cqw; line-height: 1.1; color: var(--c-acc); }
+.c-tx { right: 22cqw; top: 8cqw; height: 66cqw; writing-mode: vertical-rl; font-family: var(--f-mincho); font-size: 3.2cqw; line-height: 1.9; }
+.c-sm { left: 5cqw; top: 66cqw; width: 18cqw; font-size: 2.6cqw; line-height: 1.5; font-family: var(--f-mincho); }
+.c-hand2 { left: 6cqw; bottom: 8cqw; font-family: var(--f-hand); font-size: 6cqw; transform: rotate(-4deg); color: var(--c-acc); }
+.c-cap { right: 5cqw; bottom: 6cqw; font-size: 2.6cqw; font-family: var(--f-mincho); }
+
+/* D */
+.eD { --paper: var(--d-paper); --ink: var(--d-ink); --acc: var(--d-acc); --shadow: var(--d-shadow); --vig: var(--d-vig); --dot: var(--d-dot); --edge: var(--d-edge); --pf: grayscale(.85) contrast(1.4) brightness(.95); --ho: .5; --ds: .9cqw; --grain-op: 1; --mis: .35cqw 0 0 var(--d-acc); }
+.d-info { left: 6cqw; right: 6cqw; top: 5cqw; font-family: var(--f-mono); font-size: 2.6cqw; line-height: 1.5; display: flex; justify-content: space-between; }
+.d-ph { left: 14cqw; right: -8cqw; top: 22cqw; bottom: 30cqw; }
+.d-mast { left: 4cqw; bottom: 8cqw; font-family: var(--f-ui); font-weight: 600; font-size: 25cqw; letter-spacing: -.045em; line-height: 1; z-index: 4; }
+.d-dot { left: 6cqw; top: 22cqw; width: 4cqw; height: 4cqw; border-radius: 50%; background: var(--d-acc); z-index: 4; }
+.d-tag { right: 6cqw; bottom: 5cqw; font-family: var(--f-mono); font-size: 2.4cqw; text-align: right; }
+.d-ph2 { left: 0; right: 0; top: 0; height: 74cqw; }
+.d-num { left: 5cqw; top: 54cqw; font-family: var(--f-ui); font-weight: 600; font-size: 24cqw; letter-spacing: -.05em; line-height: 1; color: var(--paper); z-index: 4; }
+.d-idx { left: 6cqw; top: 80cqw; width: 36cqw; font-family: var(--f-mono); font-size: 2.8cqw; line-height: 1.8; }
+.d-txt { left: 48cqw; right: 6cqw; top: 80cqw; font-family: var(--f-ui); font-size: 3.4cqw; line-height: 1.6; }
+.d-cap { left: 6cqw; right: 6cqw; bottom: 5cqw; font-family: var(--f-mono); font-size: 2.4cqw; display: flex; justify-content: space-between; }
+</style>
+
+<header class="top">
+  <h1>Wedding Issue Eras</h1>
+  <p>古い雑誌の年代4案。どれも黄ばんだ紙、網点、褪色写真でできています。</p>
+  <div class="toc">
+    <button type="button" data-to="A">A 50〜60年代 洋雑誌</button>
+    <button type="button" data-to="B">B 70〜80年代 洋雑誌</button>
+    <button type="button" data-to="C">C 80〜90年代 和雑誌</button>
+    <button type="button" data-to="D">D 90年代 ミニマル</button>
+  </div>
+  <input type="file" id="photo-input" accept="image/*" multiple>
+  <label for="photo-input" class="pick">写真を差し込む(端末内のみ)</label>
+  <div id="photo-status"></div>
+</header>
+
+<main>
+<!-- A -->
+<section class="era eA" id="era-A">
+  <div class="eh"><h2>A 50〜60年代 洋雑誌</h2><p>Bodoni Moda / Zen Old Mincho。モノクロ写真、細いマストヘッド、大きな余白。</p></div>
+  <div class="sheet" style="aspect-ratio:3/4.2">
+    <div class="a-top"><span>VOL. XII</span><span>OCTOBER 2026</span><span>¥500</span></div>
+    <h3 class="a-mast mis">VEIL</h3>
+    <div class="photo a-ph"><i class="im"></i></div>
+    <p class="a-cap">Kazuki &amp; Misaki<br><em>The Wedding Number</em></p>
+    <p class="a-foot">82 guests · 1,204 moments</p>
+  </div>
+  <div class="sheet" style="aspect-ratio:1/1.25">
+    <div class="a-top"><span>34</span><span>VEIL</span></div>
+    <h3 class="a-h mis">A Quiet<br>Toast</h3>
+    <p class="a-body">グラスの音が重なって、会場の端まで届いた。誰もが少しだけ背筋を伸ばした夜。</p>
+    <div class="photo a-ph2"><i class="im" style="--ga:var(--gC);--gb:var(--gB)"></i></div>
+    <p class="a-c2">19:42 · 乾杯 — from a guest</p>
+  </div>
+</section>
+
+<!-- B -->
+<section class="era eB" id="era-B">
+  <div class="eh"><h2>B 70〜80年代 洋雑誌</h2><p>Abril Fatface / Anton。赤・黄・青の色面、たくさんのキャッチ、写真に重なる文字。</p></div>
+  <div class="sheet" style="aspect-ratio:3/4.2">
+    <h3 class="b-mast mis">DAZZLE</h3>
+    <div class="b-band">THE WEDDING ISSUE · OCT 2026 · ¥500</div>
+    <div class="photo b-ph"><i class="im" style="--ga:var(--gC);--gb:var(--gF)"></i></div>
+    <div class="b-cl b-cl1">82 guests</div>
+    <div class="b-cl b-cl2">tell all!</div>
+    <div class="b-cl b-cl3">1,204 snaps inside</div>
+    <div class="b-cl b-cl4">Her secret vows<br>The cake disaster<br>12 table confessions</div>
+    <div class="b-burst"><span>¥500<small>NOW!</small></span></div>
+  </div>
+  <div class="sheet inner" style="aspect-ratio:1/1.2">
+    <div class="photo b-ph2"><i class="im" style="--ga:var(--gE);--gb:var(--gD)"></i></div>
+    <div class="b-do mis">WE DO!</div>
+    <div class="b-box">&ldquo;Best night of the year.&rdquo;<small>19:42 · THE TOAST · FROM A GUEST</small></div>
+    <div class="b-side">KAZUKI &amp; MISAKI</div>
+  </div>
+</section>
+
+<!-- C -->
+<section class="era eC" id="era-C">
+  <div class="eh"><h2>C 80〜90年代 和雑誌</h2><p>Kaisei Decol / Zen Old Mincho / Yomogi。縦組みと横文字、小さな注釈、手書き。</p></div>
+  <div class="sheet" style="aspect-ratio:3/4.2">
+    <div class="photo c-ph"><i class="im" style="--ga:var(--gC);--gb:var(--gF)"></i></div>
+    <h3 class="c-mast mis">ハレノヒ</h3>
+    <div class="c-en">HARE-NO-HI No.10 / 10月号</div>
+    <div class="c-sticker">特別<br>付録</div>
+    <div class="c-price">定価500円</div>
+    <div class="c-hand">ふたり、さいこう!</div>
+    <div class="c-note">※掲載の写真は、結婚式当日にゲスト全員が撮影したものです。<br>Kazuki &amp; Misaki / 2026.10.25 / 82人・1,204枚</div>
+  </div>
+  <div class="sheet" style="aspect-ratio:1/1.2">
+    <div class="photo c-ph2"><i class="im" style="--ga:var(--gE);--gb:var(--gD)"></i></div>
+    <div class="photo c-ph3"><i class="im" style="--ga:var(--gC);--gb:var(--gB)"></i></div>
+    <h3 class="c-h mis">ふたりの一日</h3>
+    <p class="c-tx">扉が開いた瞬間、チャペルの空気が少しだけ変わった。誰も合図をしていないのに、全員が息をのんだ。</p>
+    <p class="c-sm">19:42 乾杯<br>※from a guest</p>
+    <p class="c-hand2">これ、永久保存!</p>
+    <p class="c-cap">p.34</p>
+  </div>
+</section>
+
+<!-- D -->
+<section class="era eD" id="era-D">
+  <div class="eh"><h2>D 90年代 ミニマル</h2><p>Archivo Narrow / Courier Prime。スナップ、等幅の小さな字、粗い粒子、大胆なトリミング。</p></div>
+  <div class="sheet" style="aspect-ratio:3/4.2">
+    <div class="d-info"><span>ISSUE 07<br>OCT 2026</span><span style="text-align:right">THE WEDDING<br>ISSUE ¥500</span></div>
+    <div class="photo d-ph"><i class="im" style="--ga:var(--gE);--gb:var(--gB)"></i></div>
+    <i class="d-dot"></i>
+    <h3 class="d-mast mis">moment/s</h3>
+    <p class="d-tag">kazuki &amp; misaki<br>82 guests / 1,204 moments</p>
+  </div>
+  <div class="sheet" style="aspect-ratio:1/1.2">
+    <div class="photo d-ph2"><i class="im" style="--ga:var(--gC);--gb:var(--gD)"></i></div>
+    <div class="d-num mis">10.25</div>
+    <div class="d-idx">01 toast<br>02 tables<br>03 night<br>04 after</div>
+    <p class="d-txt">グラスの音が重なって、会場の端まで届いた。この一枚は、前列から。</p>
+    <div class="d-cap"><span>p.034</span><span>19:42 / from a guest</span></div>
+  </div>
+</section>
+</main>
+
+<script>
+(function () {
+  document.querySelectorAll('[data-to]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var el = document.getElementById('era-' + b.getAttribute('data-to'));
+      if (el) el.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    });
+  });
+  var urls = [];
+  document.getElementById('photo-input').addEventListener('change', function (e) {
+    var files = Array.prototype.slice.call(e.target.files || []).filter(function (f) { return /^image\//.test(f.type); });
+    if (!files.length) return;
+    urls.forEach(function (u) { URL.revokeObjectURL(u); });
+    urls = files.map(function (f) { return URL.createObjectURL(f); });
+    document.querySelectorAll('.im').forEach(function (el, i) {
+      el.style.backgroundImage = 'url("' + urls[i % urls.length] + '")';
+    });
+    document.getElementById('photo-status').textContent = files.length + '枚を差し込みました(端末内のみ。案ごとの加工がかかります)';
+  });
+})();
+</script>
