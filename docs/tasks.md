@@ -21,7 +21,7 @@
 | T10 | wrangler.toml に本番の値を入れる | backend-dev | T7a | 完了 |
 | DEPLOY | 本番へのデプロイ（API とフロント） | メインエージェント | T7, T9, T10 | 完了（2026-10-22） |
 | T8 | 修正後の再確認（QA） | qa-tester | T7a, T7b | 完了 |
-| T11 | 開発サーバー（StrictMode）でカメラが起動しない不具合の修正 | frontend-dev | T8 | 進行中 |
+| T11 | 開発サーバー（StrictMode）でカメラが起動しない不具合の修正 | frontend-dev | T8 | 完了（本番には未反映。本番には影響しない不具合のため） |
 
 ---
 

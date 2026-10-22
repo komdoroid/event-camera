@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { EventInfo } from '../api';
+import { useAlive } from '../lib/useAlive';
 import { captureFrame } from './capture';
 import { refund, shoot, startFilm, wind, WIND_NEED, type Film } from './film';
 import { uploadQueue, type FailReason } from './uploader';
@@ -49,7 +50,7 @@ export default function CameraScreen({ event, guestId, initialRemaining, onFinis
   const wheelRef = useRef<HTMLDivElement>(null);
   const finishTimer = useRef(0);
   const toastTimer = useRef(0);
-  const alive = useRef(true);
+  const alive = useAlive();
   const pending = usePendingUploads();
 
   const update = (f: Film) => { filmRef.current = f; setFilm(f); };
@@ -59,7 +60,6 @@ export default function CameraScreen({ event, guestId, initialRemaining, onFinis
     return () => clearInterval(t);
   }, []);
   useEffect(() => () => {
-    alive.current = false;
     streamRef.current?.getTracks().forEach((t) => t.stop());
     clearTimeout(finishTimer.current);
     clearTimeout(toastTimer.current);
