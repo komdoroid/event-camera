@@ -1,0 +1,10 @@
+{
+  "name": "event-camera-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:api": "node --test api.test.mjs",
+    "e2e": "node e2e/browser.mjs"
+  },
+  "devDependencies": { "playwright": "^1.64.1" }
+}
