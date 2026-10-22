@@ -17,14 +17,14 @@ export default function GuestPage() {
   const [tick, setTick] = useState(0);
   const [latest, setLatest] = useState<EventInfo | null>(null);
   const nav = useNavigate();
-  const waiting = load.s === 'ready' && load.event.status !== 'published' && (finished || load.remaining <= 0);
+  const shooting = load.s === 'ready' && load.event.status !== 'published' && latest?.status !== 'published';
 
-  // 現像待ちの間は数秒おきに状態を見る
+  // 撮影中も現像待ちも、数秒おきに現像されたかを見る
   useEffect(() => {
-    if (!waiting) return;
-    const t = setInterval(() => { api.getEvent(eventId).then(setLatest).catch(() => {}); }, 5000);
+    if (!shooting) return;
+    const t = setInterval(() => { api.getEvent(eventId).then(setLatest).catch(() => {}); }, 6000);
     return () => clearInterval(t);
-  }, [waiting, eventId]);
+  }, [shooting, eventId]);
 
   useEffect(() => {
     let alive = true;
@@ -54,5 +54,5 @@ export default function GuestPage() {
   // 撮り切り: 現像待ち（現像されたら自動で切りかわる）
   if (finished || remaining <= 0) return <WaitScreen shotLimit={event.shotLimit} eventName={event.name} />;
 
-  return <CameraScreen event={event} guestId={getGuestId()} initialRemaining={remaining} onFinished={() => setFinished(true)} />;
+  return <CameraScreen event={event} guestId={getGuestId()} initialRemaining={remaining} onFinished={() => setFinished(true)} onClosed={() => setLatest({ ...event, status: 'published' })} />;
 }

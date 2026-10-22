@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import QRCode from 'qrcode';
 import { api, type EventInfo, type HostPhoto } from '../api';
-import { buildZip, guestUrl, loadHostToken, saveBlob, saveHostToken, withToken } from './hostLib';
+import { adminLink, buildZip, guestUrl, loadHostToken, saveBlob, saveHostToken, takeTokenFromHash, withToken } from './hostLib';
 import './host.css';
 
 export default function HostEvent() {
   const { eventId = '' } = useParams();
-  const [token, setToken] = useState(() => loadHostToken(eventId));
+  const [token, setToken] = useState(() => takeTokenFromHash(eventId) ?? loadHostToken(eventId));
   const [input, setInput] = useState('');
   const [ev, setEv] = useState<EventInfo | null>(null);
   const [loadErr, setLoadErr] = useState(false);
@@ -15,6 +15,7 @@ export default function HostEvent() {
   const [qr, setQr] = useState('');
   const [fullQr, setFullQr] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [copiedAdmin, setCopiedAdmin] = useState(false);
   const [confirm, setConfirm] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
@@ -33,12 +34,18 @@ export default function HostEvent() {
     return () => { alive = false; clearInterval(t); };
   }, [eventId, token]);
 
-  // 写真数が変わったら一覧を取り直す
-  const photoCount = ev?.stats.photos ?? -1;
+  // 一覧は stats.uploaded が変わったときに取り直す。古い API(uploaded なし)では数秒おきに取り直す
+  const uploaded = ev?.stats.uploaded;
+  const loaded = !!ev;
   useEffect(() => {
-    if (!token || photoCount < 0) return;
-    api.listPhotos(eventId, token).then((r) => setPhotos(r.photos)).catch(() => {});
-  }, [eventId, token, photoCount, ev?.status]);
+    if (!token || !loaded) return;
+    let alive = true;
+    const load = () => api.listPhotos(eventId, token).then((r) => alive && setPhotos(r.photos)).catch(() => {});
+    load();
+    if (uploaded !== undefined) return () => { alive = false; };
+    const t = setInterval(load, 5000);
+    return () => { alive = false; clearInterval(t); };
+  }, [eventId, token, loaded, uploaded, ev?.status]);
 
   if (!token)
     return (
@@ -71,6 +78,9 @@ export default function HostEvent() {
     try { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch { setErr('コピーできませんでした。URLを長押ししてコピーしてください。'); }
   }
 
+  async function copyAdmin() {
+    try { await navigator.clipboard.writeText(adminLink(eventId, token!)); setCopiedAdmin(true); setTimeout(() => setCopiedAdmin(false), 2000); } catch { setErr('コピーできませんでした。'); }
+  }
   const published = ev?.status === 'published';
   return (
     <div className="host"><div className="host-in">
@@ -94,6 +104,7 @@ export default function HostEvent() {
           <div><b>{ev?.stats.guests ?? '-'}</b><span>参加ゲスト</span></div>
           <div><b>{ev?.stats.photos ?? '-'}</b><span>撮影枚数</span></div>
         </div>
+        {ev?.stats.uploaded !== undefined && <p>撮影 {ev.stats.photos} 枚（うち保存済み {ev.stats.uploaded} 枚）{ev.stats.uploaded < ev.stats.photos ? ' 送信中の写真があります' : ''}</p>}
         {published ? (
           <>
             <p>現像済みです。アルバムを確認できます。</p>
@@ -116,6 +127,11 @@ export default function HostEvent() {
         )}
         {zip && <><div className="bar"><i style={{ width: `${zip.total ? (zip.done / zip.total) * 100 : 0}%` }} /></div><p>{zip.done} / {zip.total} 枚を取得中…</p></>}
         <button className="hbtn ghost" onClick={download} disabled={photos.length === 0 || !!zip}>すべてダウンロード（zip）</button>
+      </section>
+      <section className="card">
+        <h2>別の端末で管理する</h2>
+        <p>このリンクを開いた端末でも、現像や写真のダウンロードができます。ホストの鍵が入っているので、ゲストや他の人には送らないでください。</p>
+        <button className="hbtn ghost" onClick={copyAdmin}>{copiedAdmin ? 'コピーしました' : '管理用リンクをコピー'}</button>
       </section>
       {err && <div className="err" role="alert">{err}</div>}
 

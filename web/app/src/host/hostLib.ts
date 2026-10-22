@@ -15,6 +15,23 @@ export function withToken(url: string, token: string): string {
   return url + (url.includes('?') ? '&' : '?') + 'token=' + encodeURIComponent(token);
 }
 
+/** URL のハッシュ（#t=...）からホストトークンを取り出す。ハッシュはサーバーに送られない */
+export function parseHashToken(hash: string): string | null {
+  const t = new URLSearchParams(hash.replace(/^#/, '')).get('t');
+  return t ? t : null;
+}
+/** 別の端末で管理するためのリンク */
+export const adminLink = (eventId: string, token: string) => `${location.origin}/host/${eventId}#t=${encodeURIComponent(token)}`;
+
+/** ハッシュにトークンがあれば保存し、ハッシュを消す。あれば返す */
+export function takeTokenFromHash(eventId: string): string | null {
+  const t = parseHashToken(location.hash);
+  if (!t) return null;
+  saveHostToken(eventId, t);
+  try { history.replaceState(null, '', location.pathname + location.search); } catch { /* noop */ }
+  return t;
+}
+
 export const guestUrl = (eventId: string) => `${location.origin}/e/${eventId}`;
 
 const extOf = (type: string) => (type.includes('png') ? 'png' : type.includes('svg') ? 'svg' : 'jpg');

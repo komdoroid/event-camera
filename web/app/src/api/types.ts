@@ -7,7 +7,7 @@ export interface EventInfo {
   shotLimit: number;
   status: EventStatus;
   publishedAt: string | null;
-  stats: { guests: number; photos: number };
+  stats: { guests: number; photos: number; uploaded?: number };
 }
 export interface GuestStatus { taken: number; remaining: number }
 export interface ShotTicket { photoId: string; uploadUrl: string; expiresAt: string; remaining: number }

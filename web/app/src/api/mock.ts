@@ -44,7 +44,7 @@ function ensure(id: string) {
 }
 const pub = (e: ReturnType<typeof ensure>): EventInfo => ({
   id: e.id, name: e.name, shotLimit: e.shotLimit, status: e.status, publishedAt: e.publishedAt,
-  stats: { guests: new Set(e.photos.map((p) => p.guestId)).size, photos: e.photos.length },
+  stats: { guests: new Set(e.photos.map((p) => p.guestId)).size, photos: e.photos.length, uploaded: e.photos.filter((p) => p.blob).length },
 });
 
 export const mockApi: Api = {

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { unzipSync } from 'fflate';
-import { buildZip, loadHostToken, saveHostToken, withToken } from './hostLib';
+import { adminLink, buildZip, loadHostToken, parseHashToken, saveHostToken, takeTokenFromHash, withToken } from './hostLib';
 
 describe('hostLib', () => {
   beforeEach(() => {
@@ -16,6 +16,18 @@ describe('hostLib', () => {
     expect(withToken('https://x/api/photos/1', 't')).toBe('https://x/api/photos/1?token=t');
     expect(withToken('https://x/p?a=1', 't')).toBe('https://x/p?a=1&token=t');
     expect(withToken('blob:abc', 't')).toBe('blob:abc');
+  });
+  it('管理用リンクのハッシュを読み取り、保存してハッシュを消す', () => {
+    expect(parseHashToken('#t=abc%2B1')).toBe('abc+1');
+    expect(parseHashToken('')).toBeNull();
+    expect(parseHashToken('#x=1')).toBeNull();
+    let replaced = '';
+    (globalThis as any).location = { origin: 'https://app.example', pathname: '/host/ev1', search: '', hash: '#t=tok123' };
+    (globalThis as any).history = { replaceState: (_a: unknown, _b: string, url: string) => { replaced = url; } };
+    expect(adminLink('ev1', 'tok123')).toBe('https://app.example/host/ev1#t=tok123');
+    expect(takeTokenFromHash('ev1')).toBe('tok123');
+    expect(loadHostToken('ev1')).toBe('tok123');
+    expect(replaced).toBe('/host/ev1');
   });
   it('buildZip は順に取得し進捗を出して zip にする', async () => {
     const order: string[] = [];

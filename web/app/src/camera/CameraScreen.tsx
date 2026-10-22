@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { EventInfo } from '../api';
 import { captureFrame } from './capture';
-import { shoot, startFilm, wind, WIND_NEED, type Film } from './film';
-import { enqueue, pendingUploads } from './uploader';
+import { refund, shoot, startFilm, wind, WIND_NEED, type Film } from './film';
+import { uploadQueue, type FailReason } from './uploader';
+import { usePendingUploads } from './usePending';
 
-interface Props { event: EventInfo; guestId: string; initialRemaining: number; onFinished: () => void }
+interface Props { event: EventInfo; guestId: string; initialRemaining: number; onFinished: () => void; onClosed: () => void }
 type Cam = 'idle' | 'starting' | 'live' | 'error';
 
 const pad = (n: number) => (n < 10 ? '0' : '') + n;
@@ -34,7 +35,7 @@ function Roll({ value }: { value: number }) {
   );
 }
 
-export default function CameraScreen({ event, guestId, initialRemaining, onFinished }: Props) {
+export default function CameraScreen({ event, guestId, initialRemaining, onFinished, onClosed }: Props) {
   const [film, setFilm] = useState<Film>(() => startFilm(initialRemaining));
   const filmRef = useRef(film);
   const [cam, setCam] = useState<Cam>('idle');
@@ -48,6 +49,8 @@ export default function CameraScreen({ event, guestId, initialRemaining, onFinis
   const wheelRef = useRef<HTMLDivElement>(null);
   const finishTimer = useRef(0);
   const toastTimer = useRef(0);
+  const alive = useRef(true);
+  const pending = usePendingUploads();
 
   const update = (f: Film) => { filmRef.current = f; setFilm(f); };
 
@@ -56,6 +59,7 @@ export default function CameraScreen({ event, guestId, initialRemaining, onFinis
     return () => clearInterval(t);
   }, []);
   useEffect(() => () => {
+    alive.current = false;
     streamRef.current?.getTracks().forEach((t) => t.stop());
     clearTimeout(finishTimer.current);
     clearTimeout(toastTimer.current);
@@ -76,6 +80,7 @@ export default function CameraScreen({ event, guestId, initialRemaining, onFinis
         video: { facingMode: { ideal: 'environment' }, width: { ideal: 2048 }, height: { ideal: 2048 } },
         audio: false,
       });
+      if (!alive.current) { stream.getTracks().forEach((t) => t.stop()); return; } // 画面を離れた後に許可された場合
       streamRef.current = stream;
       const v = videoRef.current!;
       v.srcObject = stream;
@@ -116,9 +121,16 @@ export default function CameraScreen({ event, guestId, initialRemaining, onFinis
     flash();
     jpeg
       .then((blob) =>
-        enqueue({ eventId: event.id, guestId, blob }, (reason) =>
-          notify(reason === 'limit' ? '上限に達していたため、1枚は保存されませんでした' : reason === 'closed' ? '現像済みのため、1枚は保存されませんでした' : '1枚の送信に失敗しました（通信を確認してください）'),
-        ),
+        uploadQueue.enqueue({ eventId: event.id, guestId, blob }, (reason: FailReason) => {
+          if (!alive.current) return;
+          if (reason === 'closed') {
+            // 現像済みだった: 先に減らしたカウンターを戻して、画面を切りかえる
+            update(refund(filmRef.current));
+            onClosed();
+          } else {
+            notify(reason === 'limit' ? '上限に達していたため、1枚は保存されませんでした' : '送信できず、1枚は保存されませんでした');
+          }
+        }),
       )
       .catch(() => notify('撮影に失敗しました'));
     if (next.remaining === 0) {
@@ -157,7 +169,7 @@ export default function CameraScreen({ event, guestId, initialRemaining, onFinis
 
   return (
     <section className="cam" data-wound={film.wound ? '1' : '0'}>
-      <div className="cam-top"><span className="lbl evname">{event.name}</span></div>
+      <div className="cam-top"><span className="lbl evname">{event.name}</span>{pending > 0 && <span className="lbl sending">送信中 {pending} 枚</span>}</div>
       <div className="cam-mid">
         <div className="viewf">
           <video ref={videoRef} playsInline muted autoPlay />
@@ -201,5 +213,3 @@ export default function CameraScreen({ event, guestId, initialRemaining, onFinis
     </section>
   );
 }
-// pendingUploads は将来「離脱時の警告」に使う
-void pendingUploads;

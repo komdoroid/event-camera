@@ -17,3 +17,8 @@ export function wind(f: Film, dx: number): Film {
   const progress = f.progress + Math.abs(dx);
   return { ...f, progress, wound: progress >= WIND_NEED };
 }
+
+/** 撮影が保存されなかったとき（現像済みだった等）に、1枚ぶん元に戻す */
+export function refund(f: Film): Film {
+  return { remaining: f.remaining + 1, wound: true, progress: 0 };
+}
