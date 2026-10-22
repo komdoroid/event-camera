@@ -35,3 +35,6 @@ cd tests && node --test api.test.mjs        # API_BASE=http://localhost:8787 が
 
 ## 注意
 - headless の chromium には日本語フォントがなく、カメラ画面（Web フォント未使用）の日本語が豆腐になる。実機では出ない想定
+
+## 5. ホストのアプリ枠（`e2e/host-app.mjs`）
+実 API + 実 API 向けの web（`npm run dev` でも preview でも可）。マイイベント一覧・下部タブ・管理用リンク・theme-color・manifest/アイコン/installability（CDP）を確認する。スクリーンショットは `screenshots/host-app-*.png`。
