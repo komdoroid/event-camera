@@ -15,8 +15,11 @@
 | T4 | 現像待ち・発刊のお知らせ・アルバム・購入・完了の画面（絵日記スタイル）とホスト画面のスタイル統一 | frontend-dev | T0e の決定, T2, T3 | 完了（実機の確認は残り） |
 | T5 | 通しの動作確認とテスト | qa-tester | T3, T4 | 完了（修正は T7 で） |
 | T6 | レビュー | reviewer | T3, T4 | 完了（修正は T7 で） |
-| T7a | レビューと QA の指摘の修正（API） | backend-dev | T5, T6 | 進行中 |
-| T7b | レビューと QA の指摘の修正（フロント） | frontend-dev | T5, T6 | 進行中 |
+| T7a | レビューと QA の指摘の修正（API） | backend-dev | T5, T6 | 完了 |
+| T7b | レビューと QA の指摘の修正（フロント） | frontend-dev | T5, T6 | 完了 |
+| T9 | フロントを Worker の静的アセットとして公開する設定 | frontend-dev | T7b | 完了 |
+| T10 | wrangler.toml に本番の値を入れる | backend-dev | T7a | 完了 |
+| DEPLOY | 本番へのデプロイ（API とフロント） | メインエージェント | T7, T9, T10 | 完了（2026-10-22） |
 | T8 | 修正後の再確認（QA） | qa-tester | T7a, T7b | 未着手 |
 
 ---
@@ -172,3 +175,11 @@
   - 現像後でも、現像前に確保した枠のアップロード（署名の期限内）は受け付ける。現像の直前に撮った写真を失わないため（決定）
   - `GET /events/:id` の stats に `uploaded`（アップロード済みの枚数）を追加する（項目の追加のみ。既存の項目は変えない）
 - フロント（T7b）: 不具合 A・B・C と、レビューの指摘（離脱時の警告、送信中の枚数の表示、ホストの管理用リンク、`VITE_API_BASE` 未設定時のビルドエラー）を直す
+
+## デプロイの結果（2026-10-22）
+- フロント: https://event-camera.kom-commoc.workers.dev （コミット 0c0d2ea）
+- API: https://event-camera-api.kom-commoc.workers.dev （コミット 1586843）
+- 本番で確認したこと: フロントの各ルートが 200 で index.html を返す。CORS のプリフライトが通る。作成 → PUT → 現像前のアルバムは 403 → 現像 → アルバム → 画像（nosniff と CSP のヘッダ付き）
+- 未確認: 実機のスマホでのカメラ、QR の読み取り
+- T8（修正後の再確認）: QA のテストを、`stats.uploaded` の追加とローカル D1 の再マイグレーションに合わせて更新する必要がある
+- 経緯: `wrangler pages project create` を api/ で実行して、API のコピーが Worker `event-camera` として公開された。そのあと、フロントで上書きした
