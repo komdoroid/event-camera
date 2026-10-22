@@ -48,6 +48,7 @@ openssl rand -hex 32 | npx wrangler secret put UPLOAD_SIGNING_SECRET
 cd ../web/app
 npm install
 VITE_API_BASE=<API_URL> npm run build
+grep -rl "workers.dev" dist/assets   # 何も出なければ VITE_API_BASE の付け忘れ（本番が localhost を呼んでしまう）
 cd ../../api
 npx wrangler pages project create event-camera --production-branch main
 npx wrangler pages deploy ../web/app/dist --project-name event-camera --branch main
@@ -67,13 +68,17 @@ npx wrangler deploy
 4. スマホで同じ URL を開き直し、アルバム → 購入まで進む。
 
 ## 2回目以降の更新
+リポジトリのルートで実行する。
 ```
-cd api && npx wrangler deploy                                        # API を変えたとき
-cd web/app && VITE_API_BASE=<API_URL> npm run build
-cd ../../api && npx wrangler pages deploy ../web/app/dist --project-name event-camera --branch main
+(cd api && npx wrangler deploy)                                      # API を変えたとき
+(cd web/app && VITE_API_BASE=<API_URL> npm run build)
+grep -rl "workers.dev" web/app/dist/assets                           # 何も出なければ VITE_API_BASE の付け忘れ
+(cd api && npx wrangler pages deploy ../web/app/dist --project-name event-camera --branch main)
 ```
 - D1 のマイグレーションが増えたときは、`npx wrangler d1 migrations apply event-camera --remote` も実行する。
 
 ## 注意
+- 手順 4 でデプロイしてから手順 6 で `ALLOWED_ORIGINS` を設定するまでのあいだは、フロントから API を呼ぶと CORS で失敗する。手順 7 の前に必ず 6 まで終える。
+- ホストの操作（作成・現像・ダウンロード）は、作成に使った端末で行う（ホストのトークンはその端末にだけ保存される）。
 - Pages のプレビュー用 URL（`<ハッシュ>.event-camera.pages.dev`）は CORS で許可していないので、デモでは本番の URL を使う。
 - `wrangler.toml` の `database_id` と `ALLOWED_ORIGINS` はコミットしてよい（秘密情報ではない）。`UPLOAD_SIGNING_SECRET` はコミットしない。
