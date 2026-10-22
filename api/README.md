@@ -27,7 +27,9 @@ curl -s -X POST $B/events/$ID/orders -H "$J" -d "{\"guestId\":\"$G\",\"product\"
 3枚目の `POST /shots` は 409、現像後は 403。
 
 ## 補足
-- 署名付きURLは `/api/uploads/:photoId?exp=&sig=`（HMAC-SHA256、10分有効、10MBまで、image/* のみ）
+- 署名付きURLは `/api/uploads/:photoId?exp=&sig=`（HMAC-SHA256、10分有効、10MBまで、jpeg/png/webp のみ。アップロード済みの写真への再PUTは 409）
 - 現像前の `GET /api/photos/:id` はホストのみ（`Authorization: Bearer` か `?token=<hostToken>`。後者は `<img>` 用）
 - CORS: `http://localhost:5173` と `ALLOWED_ORIGINS`（カンマ区切り）
 - 本番の D1 / R2 は Kazuki が作成し、`wrangler.toml` の `database_id` を差し替える（現状はローカル用ダミー）
+- 現像後でも、現像前に確保した枠のアップロード（署名の期限内）は受け付ける（現像直前の写真を失わないため）
+- 画像の配信には `nosniff` と `CSP: default-src 'none'` を付ける

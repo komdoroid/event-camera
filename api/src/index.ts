@@ -10,6 +10,7 @@ const UPLOAD_TTL_SEC = 600;
 const DEFAULT_SHOT_LIMIT = 27;
 const PRODUCTS: Record<string, number> = { digital: 500, print: 3000 };
 const MAX_SHOT_LIMIT = 200;
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 class HttpError extends Error {
   constructor(public status: number, message: string) {
@@ -148,8 +149,8 @@ async function route(req: Request, env: Env): Promise<Response> {
     // GET /api/events/:id
     if (p.length === 2 && m === "GET") {
       const ev = await getEvent(env, eventId);
-      const s = await env.DB.prepare("SELECT COUNT(DISTINCT guest_id) AS g, COUNT(*) AS c FROM photos WHERE event_id = ?").bind(eventId).first<{ g: number; c: number }>();
-      return json({ id: ev.id, name: ev.name, shotLimit: ev.shot_limit, status: ev.status, publishedAt: ev.published_at, stats: { guests: s?.g ?? 0, photos: s?.c ?? 0 } });
+      const s = await env.DB.prepare("SELECT COUNT(DISTINCT guest_id) AS g, COUNT(*) AS c, COALESCE(SUM(uploaded),0) AS u FROM photos WHERE event_id = ?").bind(eventId).first<{ g: number; c: number; u: number }>();
+      return json({ id: ev.id, name: ev.name, shotLimit: ev.shot_limit, status: ev.status, publishedAt: ev.published_at, stats: { guests: s?.g ?? 0, photos: s?.c ?? 0, uploaded: s?.u ?? 0 } });
     }
 
     // GET /api/events/:id/guests/:guestId
@@ -235,13 +236,14 @@ async function route(req: Request, env: Env): Promise<Response> {
     const expected = await hmacHex(env.UPLOAD_SIGNING_SECRET, `${photoId}.${exp}`);
     if (!safeEqual(expected, sig)) throw new HttpError(403, "invalid signature");
     if (Date.now() / 1000 > exp) throw new HttpError(410, "upload url expired");
-    const ct = req.headers.get("Content-Type") ?? "";
-    if (!ct.toLowerCase().startsWith("image/")) throw new HttpError(415, "Content-Type must be image/*");
+    const ct = (req.headers.get("Content-Type") ?? "").split(";")[0].trim().toLowerCase();
+    if (!ALLOWED_TYPES.includes(ct)) throw new HttpError(415, "Content-Type must be image/jpeg, image/png or image/webp");
     const len = Number(req.headers.get("Content-Length"));
     if (!Number.isFinite(len) || len <= 0) throw new HttpError(411, "Content-Length required");
     if (len > MAX_UPLOAD_BYTES) throw new HttpError(413, "image too large (max 10MB)");
-    const photo = await env.DB.prepare("SELECT r2_key FROM photos WHERE id = ?").bind(photoId).first<{ r2_key: string }>();
+    const photo = await env.DB.prepare("SELECT r2_key, uploaded FROM photos WHERE id = ?").bind(photoId).first<{ r2_key: string; uploaded: number }>();
     if (!photo) throw new HttpError(404, "photo not found");
+    if (photo.uploaded) throw new HttpError(409, "photo already uploaded");
     const body = await req.arrayBuffer();
     if (body.byteLength > MAX_UPLOAD_BYTES) throw new HttpError(413, "image too large (max 10MB)");
     await env.PHOTOS.put(photo.r2_key, body, { httpMetadata: { contentType: ct } });
@@ -262,7 +264,9 @@ async function route(req: Request, env: Env): Promise<Response> {
     if (!obj) throw new HttpError(404, "photo data not found");
     return new Response(obj.body, {
       headers: {
-        "Content-Type": obj.httpMetadata?.contentType ?? "application/octet-stream",
+        "Content-Type": ALLOWED_TYPES.includes(obj.httpMetadata?.contentType ?? "") ? obj.httpMetadata!.contentType! : "application/octet-stream",
+        "X-Content-Type-Options": "nosniff",
+        "Content-Security-Policy": "default-src 'none'",
         "Cache-Control": ev.status === "published" ? "public, max-age=3600" : "private, no-store",
       },
     });
