@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
+import { upsertMyEvent } from './myEvents';
 import { saveHostToken } from './hostLib';
 import './host.css';
 
@@ -20,6 +21,7 @@ export default function HostNew() {
     try {
       const ev = await api.createEvent({ name: name.trim(), shotLimit: n });
       saveHostToken(ev.id, ev.hostToken);
+      upsertMyEvent({ id: ev.id, name: ev.name });
       nav(`/host/${ev.id}`);
     } catch {
       setErr('作成に失敗しました。通信を確認してください。');

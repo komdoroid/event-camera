@@ -1,0 +1,104 @@
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { api, type EventInfo } from '../api';
+import { Cloud, Heart } from '../diary/Doodles';
+import { formatDot } from '../diary/format';
+import { detectPlatform, dismissInstall, installHint, isDismissed, isStandalone } from '../lib/install';
+import { loadMyEvents, removeMyEvent, upsertMyEvent, type MyEvent } from './myEvents';
+import './host.css';
+
+type BIPEvent = Event & { prompt: () => Promise<unknown> };
+
+function InstallHint() {
+  const [deferred, setDeferred] = useState<BIPEvent | null>(null);
+  const [dismissed, setDismissed] = useState(isDismissed);
+  useEffect(() => {
+    const on = (e: Event) => { e.preventDefault(); setDeferred(e as BIPEvent); };
+    window.addEventListener('beforeinstallprompt', on);
+    return () => window.removeEventListener('beforeinstallprompt', on);
+  }, []);
+  const kind = installHint({ standalone: isStandalone(), dismissed, platform: detectPlatform(navigator.userAgent, navigator.maxTouchPoints), canPrompt: !!deferred });
+  if (!kind) return null;
+  const close = () => { dismissInstall(); setDismissed(true); };
+  return (
+    <div className="install card">
+      <h2>ホーム画面に追加</h2>
+      <p>ホーム画面に追加すると、アプリのように使えます。</p>
+      {kind === 'ios' && <p>Safari の「共有」ボタン → 「ホーム画面に追加」を選んでください。</p>}
+      <div className="hrow">
+        {kind === 'prompt' && <button type="button" className="hbtn" onClick={async () => { await deferred!.prompt(); setDeferred(null); }}>追加する</button>}
+        <button type="button" className="hbtn ghost" onClick={close}>閉じる</button>
+      </div>
+    </div>
+  );
+}
+
+function EventCard({ ev, onRemove }: { ev: MyEvent; onRemove: () => void }) {
+  const nav = useNavigate();
+  const [info, setInfo] = useState<EventInfo | null>(null);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    api.getEvent(ev.id)
+      .then((e) => { if (alive) { setInfo(e); if (e.name !== ev.name) upsertMyEvent({ id: ev.id, name: e.name }); } })
+      .catch(() => alive && setFailed(true));
+    return () => { alive = false; };
+  }, [ev.id, ev.name]);
+  return (
+    <li className="evcard">
+      <button type="button" className="evmain" onClick={() => nav(`/host/${ev.id}`)}>
+        <span className="evname2">{info?.name ?? (ev.name || '(名前を取得中)')}</span>
+        <span className="evmeta">
+          {ev.createdAt && <span>{formatDot(ev.createdAt)}</span>}
+          {info && <span className={`chip ${info.status}`}>{info.status === 'published' ? '現像済み' : '撮影中'}</span>}
+        </span>
+        {info ? (
+          <span className="evstats">ゲスト {info.stats.guests} 人 ・ {info.stats.photos} 枚</span>
+        ) : failed ? (
+          <span className="evstats small">状況を取得できません</span>
+        ) : (
+          <span className="skel" aria-label="読み込み中" />
+        )}
+      </button>
+      <button type="button" className="evdel" aria-label={`${ev.name || 'このイベント'}を一覧から外す`} onClick={onRemove}>
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="5" cy="12" r="1" /><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /></svg>
+      </button>
+    </li>
+  );
+}
+
+export default function MyEvents() {
+  const [list, setList] = useState<MyEvent[]>(loadMyEvents);
+  const [target, setTarget] = useState<MyEvent | null>(null);
+  return (
+    <div className="host"><div className="host-in">
+      <p className="notice">ログインなしの試作のため、この端末で作ったイベントだけが表示されます</p>
+      <InstallHint />
+      {list.length === 0 ? (
+        <div className="empty">
+          <Cloud className="flow" style={{ width: '90px', position: 'static' }} />
+          <h1>まだイベントがありません</h1>
+          <p>最初のイベントを作って、ゲストに配るQRコードを出しましょう。</p>
+          <Link className="hbtn" to="/host/new">最初のイベントをつくる</Link>
+          <Heart style={{ width: '40px', position: 'static' }} />
+        </div>
+      ) : (
+        <ul className="evlist">
+          {list.map((e) => <EventCard key={e.id} ev={e} onRemove={() => setTarget(e)} />)}
+        </ul>
+      )}
+      {target && (
+        <div className="overlay" role="dialog" aria-modal="true" aria-label="一覧から外す確認">
+          <div className="dialog">
+            <h2>一覧から外しますか？</h2>
+            <p>「{target.name || target.id}」をこの端末の一覧から外します。サーバーのデータは消えません。</p>
+            <div className="hrow">
+              <button type="button" className="hbtn ghost" onClick={() => setTarget(null)}>やめる</button>
+              <button type="button" className="hbtn" onClick={() => { removeMyEvent(target.id); setList(loadMyEvents()); setTarget(null); }}>外す</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div></div>
+  );
+}

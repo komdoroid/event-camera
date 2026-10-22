@@ -2,12 +2,17 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import QRCode from 'qrcode';
 import { api, type EventInfo, type HostPhoto } from '../api';
+import { upsertMyEvent } from './myEvents';
 import { adminLink, buildZip, guestUrl, loadHostToken, saveBlob, saveHostToken, takeTokenFromHash, withToken } from './hostLib';
 import './host.css';
 
 export default function HostEvent() {
   const { eventId = '' } = useParams();
-  const [token, setToken] = useState(() => takeTokenFromHash(eventId) ?? loadHostToken(eventId));
+  const [token, setToken] = useState(() => {
+    const t = takeTokenFromHash(eventId);
+    if (t) upsertMyEvent({ id: eventId }); // 管理用リンクで開いたイベントも一覧に入れる
+    return t ?? loadHostToken(eventId);
+  });
   const [input, setInput] = useState('');
   const [ev, setEv] = useState<EventInfo | null>(null);
   const [loadErr, setLoadErr] = useState(false);
@@ -28,7 +33,7 @@ export default function HostEvent() {
   useEffect(() => {
     if (!token) return;
     let alive = true;
-    const load = () => api.getEvent(eventId).then((e) => { if (alive) { setEv(e); setLoadErr(false); } }).catch(() => alive && setLoadErr(true));
+    const load = () => api.getEvent(eventId).then((e) => { if (alive) { setEv(e); setLoadErr(false); if (loadHostToken(eventId)) upsertMyEvent({ id: eventId, name: e.name }); } }).catch(() => alive && setLoadErr(true));
     load();
     const t = setInterval(load, 4000);
     return () => { alive = false; clearInterval(t); };

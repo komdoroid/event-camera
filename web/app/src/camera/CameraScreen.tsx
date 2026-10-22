@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { EventInfo } from '../api';
+import { useThemeColor } from '../lib/useThemeColor';
 import { useAlive } from '../lib/useAlive';
 import { captureFrame } from './capture';
 import { refund, shoot, startFilm, wind, WIND_NEED, type Film } from './film';
@@ -51,6 +52,7 @@ export default function CameraScreen({ event, guestId, initialRemaining, onFinis
   const finishTimer = useRef(0);
   const toastTimer = useRef(0);
   const alive = useAlive();
+  useThemeColor('#0b0c0f');
   const pending = usePendingUploads();
 
   const update = (f: Film) => { filmRef.current = f; setFilm(f); };
