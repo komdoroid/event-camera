@@ -21,3 +21,10 @@ npm test           # フィルム・アップロード順序の単体テスト
 
 ## 構成
 - `src/tokens.css` 色・書体のトークン / `src/api/` 型付きクライアント(+mock) / `src/camera/` カメラ画面・フィルム状態・アップロード / `src/pages/`
+
+## デプロイ（Cloudflare Worker の静的アセット。Worker 名 `event-camera`）
+```
+VITE_API_BASE=<API_URL> npm run build   # 未設定だとビルドエラー
+npx wrangler deploy                      # 設定は wrangler.jsonc（SPA の 404 は not_found_handling で処理）
+```
+`public/_redirects` は不要のため削除した（SPA の 404 処理は `not_found_handling` が担当。catch-all の rewrite は Workers の静的アセットで無限ループ扱いになりうるため競合を避けた）。
