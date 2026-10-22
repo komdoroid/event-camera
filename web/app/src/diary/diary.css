@@ -1,0 +1,63 @@
+/* 絵日記スタイルの部品。色・書体は tokens.css のトークンで決める */
+.diary { position: fixed; inset: 0; overflow-y: auto; overflow-x: hidden; background: var(--page-bg); color: var(--h-ink); font-family: var(--f-klee); padding-bottom: env(safe-area-inset-bottom); padding-top: env(safe-area-inset-top); -webkit-overflow-scrolling: touch; }
+.dpage { container-type: inline-size; position: relative; width: 100%; max-width: 560px; margin: 0 auto 4px; padding: 6cqw; overflow: hidden; box-shadow: 0 0 0 1px var(--h-line); background: var(--page-bg); }
+.dpage.screen { min-height: 100dvh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 5cqw; box-shadow: none; }
+.wob { filter: url(#wob); }
+.note { font-family: var(--f-note); color: var(--h-ink); }
+.dtitle { font-family: var(--f-klee); font-weight: 600; line-height: 1.25; }
+.doodle { position: absolute; width: 10cqw; overflow: visible; }
+.doodle.flow { position: static; }
+.wash { position: absolute; border-radius: 50%; opacity: .55; pointer-events: none; }
+.tape { position: absolute; z-index: 2; background: var(--h-pink); opacity: .75; width: 18cqw; height: 6cqw; }
+.pframe { position: relative; margin: 0; padding: 2cqw; background: #fff; }
+.pframe::before { content: ""; position: absolute; inset: 0; border: 2px solid var(--h-ink); filter: url(#wob); pointer-events: none; }
+.pframe img { display: block; width: 100%; object-fit: cover; background: var(--page-soft); }
+.hbtn2 { display: inline-block; font-family: var(--f-klee); font-weight: 600; font-size: 5cqw; padding: 2.6cqw 9cqw; color: var(--h-ink); background: #fff; position: relative; text-decoration: none; cursor: pointer; border: 0; }
+.hbtn2::before { content: ""; position: absolute; inset: 0; border: 2px solid var(--h-ink); border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px; filter: url(#wob); pointer-events: none; }
+.hbtn2:active { background: var(--h-blue); }
+.hbtn2:disabled { opacity: .5; }
+.bob { animation: bob 3.2s ease-in-out infinite; }
+@keyframes bob { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-2cqw) rotate(2deg); } }
+@media (prefers-reduced-motion: reduce) { .bob { animation: none; } }
+
+.dhead { display: flex; gap: 3cqw; align-items: center; font-size: 4.4cqw; font-weight: 600; position: relative; z-index: 1; }
+.dhead .doodle { position: static; width: 8cqw; flex: none; }
+.dhead .time { margin-left: auto; font-weight: 400; }
+.dbody { position: relative; z-index: 1; margin: 5cqw 0; display: grid; gap: 4cqw; }
+.dbody.duo { grid-template-columns: 1fr; padding: 0 6cqw; }
+.dbody.duo .pframe:nth-child(2) { margin-left: 14cqw; margin-right: -6cqw; }
+.dbody.duo .pframe:nth-child(1) { margin-right: 14cqw; margin-left: -6cqw; }
+.dbody.grid { grid-template-columns: 1fr 1fr; padding: 0 2cqw; }
+.dbody.full { padding: 0 4cqw; }
+.dlines { position: relative; z-index: 1; background: repeating-linear-gradient(transparent 0 6.4cqw, var(--h-line) 6.4cqw calc(6.4cqw + 1px)); min-height: 19.2cqw; }
+.dlines p { font-size: 4cqw; line-height: 6.4cqw; }
+.dtail { display: flex; justify-content: flex-end; gap: 4cqw; margin-top: 3cqw; height: 10cqw; position: relative; z-index: 1; }
+.dtail .doodle { position: static; }
+
+.cover { display: grid; gap: 4cqw; justify-items: start; padding-bottom: 4cqw; }
+.cover .vol { font-size: 4.2cqw; position: relative; z-index: 1; }
+.cover h1 { font-size: 13cqw; transform: rotate(-2deg); position: relative; z-index: 1; font-weight: 600; line-height: 1.25; }
+.cover .pframe { width: 82%; justify-self: end; margin-top: 6cqw; z-index: 1; }
+.cover .evn { font-size: 4.4cqw; line-height: 1.6; position: relative; z-index: 1; }
+
+.screen h1 { font-size: 9cqw; font-weight: 600; line-height: 1.3; position: relative; z-index: 1; }
+.screen p { font-size: 4.2cqw; line-height: 1.7; position: relative; z-index: 1; }
+.screen .doodle.flow { position: relative; z-index: 1; width: 34cqw; }
+.errtxt { color: var(--danger); font-size: 4cqw; }
+
+.hcard { position: relative; padding: 6cqw 5cqw; margin: 0 0 5cqw; text-align: left; z-index: 1; }
+.hcard::before { content: ""; position: absolute; inset: 0; border: 2px dashed var(--h-ink); border-radius: 20px 6px 18px 8px; filter: url(#wob); pointer-events: none; }
+.hcard .name { font-weight: 600; font-size: 5.4cqw; line-height: 1.3; }
+.hcard .price { font-family: var(--f-note); font-size: 10cqw; line-height: 1.2; position: relative; display: inline-block; padding: 0 3cqw; margin: 1cqw 0; }
+.hcard .price svg { position: absolute; inset: 0; width: 100%; height: 100%; color: var(--h-pink); }
+.hcard ul { list-style: none; font-size: 3.8cqw; margin-bottom: 4cqw; max-width: 58%; padding: 0; }
+.hcard li::before { content: "・"; }
+.hcard .vis { position: absolute; right: 5cqw; top: 8cqw; width: 26cqw; }
+.hcard .small { font-size: 3.2cqw; color: var(--page-mute); margin-top: 3cqw; }
+.dpage.buy { padding-top: 8cqw; }
+.dpage.buy h2 { font-size: 7cqw; font-weight: 600; margin-bottom: 5cqw; position: relative; z-index: 1; }
+.dpage.end { text-align: center; display: grid; gap: 4cqw; justify-items: center; padding-top: 12cqw; padding-bottom: 14cqw; }
+.dpage.end > * { position: relative; z-index: 1; }
+.dpage.end p { font-size: 4.4cqw; }
+.dpage.end .big { font-size: 7cqw; font-weight: 600; }
+.dpage.end .doodle { position: static; width: 14cqw; }

@@ -13,17 +13,25 @@
   --f-label: "Hiragino Sans", "Noto Sans JP", "Yu Gothic", "Helvetica Neue", Arial, sans-serif;
 }
 
-/* ホスト画面（白基調）。カートゥーン調に寄せるときはここを差し替える */
+/* 絵日記スタイル（ホスト画面・現像待ち以降）。差し替えるときはここを直す */
 :root {
+  --h-ink: #3d3c48;
+  --h-blue: #a6d4e4;
+  --h-pink: #f6c0ba;
+  --h-line: #c9c8d0;
+  --f-klee: "Klee One", "Zen Kurenaido", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  --f-note: "Yomogi", "Klee One", "Hiragino Maru Gothic ProN", cursive;
+
   --page-bg: #ffffff;
-  --page-ink: #15171c;
-  --page-mute: #6b6f78;
-  --page-line: #15171c;
+  --page-ink: var(--h-ink);
+  --page-mute: #75747f;
+  --page-line: var(--h-ink);
   --page-soft: #f3f4f6;
   --line-w: 2px;
-  --radius: 12px;
-  --f-heading: var(--f-body);
-  --btn-bg: var(--accent);
-  --btn-ink: #ffffff;
-  --danger: #c62828;
+  --radius: 14px;
+  --f-heading: var(--f-klee);
+  --btn-bg: #ffffff;
+  --btn-ink: var(--h-ink);
+  --btn-active: var(--h-blue);
+  --danger: #c0504d;
 }
