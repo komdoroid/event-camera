@@ -54,7 +54,7 @@ test("作成 -> 枠確保 -> PUT -> 残り枚数", async () => {
   assert.deepEqual(r, { taken: 1, remaining: 2 });
   const info = await (await fetch(`${A}/events/${ev.id}`)).json();
   assert.equal(info.status, "shooting");
-  assert.deepEqual(info.stats, { guests: 1, photos: 1 });
+  assert.deepEqual(info.stats, { guests: 1, photos: 1, uploaded: 1 });
 });
 
 test("作成の入力検証 (400)", async () => {
@@ -258,4 +258,43 @@ test("CORS プリフライト (Origin: http://localhost:5173)", async () => {
   // 許可外 Origin には付かない
   const x = await fetch(`${A}/events/nope`, { headers: { Origin: "http://evil.example" } });
   assert.equal(x.headers.get("access-control-allow-origin"), null);
+});
+
+test("T7a: SVG は 415 / png・webp は 204 / 2回目の PUT は 409", async () => {
+  const ev = await createEvent(10);
+  const g = gid();
+  const s = await shot(ev, g);
+  assert.equal((await put(s.body.uploadUrl, "<svg xmlns='http://www.w3.org/2000/svg'/>", "image/svg+xml")).status, 415);
+  assert.equal((await put(s.body.uploadUrl, "x", "image/gif")).status, 415);
+  assert.equal((await put(s.body.uploadUrl, JPEG, "text/html")).status, 415);
+  assert.equal((await put(s.body.uploadUrl)).status, 204);
+  assert.equal((await put(s.body.uploadUrl)).status, 409, "同じ URL への2回目");
+  const s2 = await shot(ev, g);
+  assert.equal((await put(s2.body.uploadUrl, JPEG, "image/png")).status, 204);
+  const s3 = await shot(ev, g);
+  assert.equal((await put(s3.body.uploadUrl, JPEG, "image/webp")).status, 204);
+});
+
+test("T7a: 画像応答のセキュリティヘッダ", async () => {
+  const ev = await createEvent(3);
+  const [id] = await shootAndUpload(ev, gid(), 1);
+  for (const url of [`${A}/photos/${id}?token=${ev.hostToken}`, null]) {
+    if (!url) await publish(ev, ev.hostToken);
+    const r = await fetch(url ?? `${A}/photos/${id}`);
+    assert.equal(r.status, 200);
+    assert.equal(r.headers.get("x-content-type-options"), "nosniff");
+    assert.equal(r.headers.get("content-security-policy"), "default-src 'none'");
+    await r.arrayBuffer();
+  }
+});
+
+test("T7a: stats.uploaded はアップロード完了で増える（photos は枠確保で増える）", async () => {
+  const ev = await createEvent(5);
+  const g = gid();
+  const st = async () => (await (await fetch(`${A}/events/${ev.id}`)).json()).stats;
+  assert.deepEqual(await st(), { guests: 0, photos: 0, uploaded: 0 });
+  const s = await shot(ev, g);
+  assert.deepEqual(await st(), { guests: 1, photos: 1, uploaded: 0 });
+  await put(s.body.uploadUrl);
+  assert.deepEqual(await st(), { guests: 1, photos: 1, uploaded: 1 });
 });
