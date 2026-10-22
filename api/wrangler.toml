@@ -3,12 +3,12 @@ main = "src/index.ts"
 compatibility_date = "2025-01-01"
 
 [vars]
-ALLOWED_ORIGINS = ""
+ALLOWED_ORIGINS = "https://event-camera.kom-commoc.workers.dev"
 
 [[d1_databases]]
 binding = "DB"
 database_name = "event-camera"
-database_id = "00000000-0000-0000-0000-000000000000" # ローカル用ダミー。本番は Kazuki が d1 create 後に差し替え
+database_id = "4e8d2268-7c16-484d-ab64-41a989058262" # 本番の D1。--local では無視される
 migrations_dir = "migrations"
 
 [[r2_buckets]]
