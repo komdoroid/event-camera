@@ -38,3 +38,14 @@ cd tests && node --test api.test.mjs        # API_BASE=http://localhost:8787 が
 
 ## 5. ホストのアプリ枠（`e2e/host-app.mjs`）
 実 API + 実 API 向けの web（`npm run dev` でも preview でも可）。マイイベント一覧・下部タブ・管理用リンク・theme-color・manifest/アイコン/installability（CDP）を確認する。スクリーンショットは `screenshots/host-app-*.png`。
+
+## 6. デモ用サンプルイベントの作成（`e2e/seed-demo.mjs`）
+過去イベント管理のデモ用に、フリー画像（出典は `docs/demo-images.md`）で4件のイベントを作る。**実行は1回だけ**（再実行すると本番 D1 に重複して作られる）。
+```
+cd tests && node e2e/seed-demo.mjs <画像ディレクトリ> <リンクの出力先ファイル>
+# API_BASE（既定: 本番 API）、WEB_BASE（既定: 本番フロント）で変更可
+```
+- 画像ディレクトリは `wedding-NN.jpg` / `birthday-NN.jpg` / `bbq-NN.jpg` / `reunion-NN.jpg`（JPEG、10MB 未満）を置く。画像はリポジトリに入れない。
+- 作るもの: ウェディングパーティー・誕生日パーティー・ガーデンBBQ（現像済み）、同窓会（撮影中）。ゲスト 3〜5 人に写真を割り振る。作成日はサーバー側で変えられないため、取り込み用リンクの `createdAt` に持たせる。
+- 最後に各イベントの status・stats・アルバム取得を確認し、取り込み用リンク `…/host#import=<base64url(JSON)>` を出力ファイルに保存する（ファイルモード 600）。
+- リンクにはホストの鍵（hostToken）が含まれるので、**リポジトリに書かない**。
