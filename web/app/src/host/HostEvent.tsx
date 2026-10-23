@@ -26,6 +26,7 @@ export default function HostEvent() {
   const [err, setErr] = useState('');
   const [zip, setZip] = useState<{ done: number; total: number } | null>(null);
   const url = guestUrl(eventId);
+  const published = ev?.status === 'published';
 
   useEffect(() => { QRCode.toDataURL(url, { margin: 1, width: 640 }).then(setQr).catch(() => {}); }, [url]);
 
@@ -86,7 +87,6 @@ export default function HostEvent() {
   async function copyAdmin() {
     try { await navigator.clipboard.writeText(adminLink(eventId, token!)); setCopiedAdmin(true); setTimeout(() => setCopiedAdmin(false), 2000); } catch { setErr('コピーできませんでした。'); }
   }
-  const published = ev?.status === 'published';
   return (
     <div className="host"><div className="host-in">
       <h1>{ev?.name ?? '読み込み中…'}</h1>
@@ -94,6 +94,7 @@ export default function HostEvent() {
 
       <section className="card">
         <h2>ゲスト用QRコード</h2>
+        <Link className="hbtn shoot" to={`/e/${eventId}${published ? '/album' : ''}`}>{published ? 'アルバムを見る' : 'わたしも撮る'}</Link>
         <p>会場に掲示し、ゲストにスマホで読み取ってもらいます。</p>
         {qr && <img className="qr" src={qr} alt="ゲスト用QRコード" />}
         <div className="urlbox">{url}</div>

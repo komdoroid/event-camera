@@ -63,3 +63,5 @@ button { font: inherit; color: inherit; background: transparent; border: 0; curs
   .flash.go { animation: dipr .25s; }
   .roll .in, .roll .out, .wheel.nudge { animation: none; }
 }
+.hostback { margin-left: auto; flex: none; color: var(--night-mute); text-decoration: none; padding: 10px 0 10px 12px; border-bottom: 1px dotted currentColor; }
+.hostback.fixed { position: fixed; z-index: 20; top: 8px; right: 16px; margin: 0; padding: 6px 0; background: none; }

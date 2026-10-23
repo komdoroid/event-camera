@@ -5,6 +5,7 @@ import { Cloud, Heart } from '../diary/Doodles';
 import { formatDot } from '../diary/format';
 import { detectPlatform, dismissInstall, installHint, isDismissed, isStandalone } from '../lib/install';
 import { loadMyEvents, removeMyEvent, upsertMyEvent, type MyEvent } from './myEvents';
+import { importFromHash } from './hostImport';
 import './host.css';
 
 type BIPEvent = Event & { prompt: () => Promise<unknown> };
@@ -70,8 +71,17 @@ function EventCard({ ev, onRemove }: { ev: MyEvent; onRemove: () => void }) {
 export default function MyEvents() {
   const [list, setList] = useState<MyEvent[]>(loadMyEvents);
   const [target, setTarget] = useState<MyEvent | null>(null);
+  const [toast, setToast] = useState('');
+  // /host#import=... で複数イベントを一括で取り込む
+  useEffect(() => {
+    const n = importFromHash();
+    if (n > 0) { setList(loadMyEvents()); setToast(`${n}件のイベントを追加しました`); }
+    const t = setTimeout(() => setToast(''), 4000);
+    return () => clearTimeout(t);
+  }, []);
   return (
     <div className="host"><div className="host-in">
+      {toast && <div className="toast" role="status">{toast}</div>}
       <p className="notice">ログインなしの試作のため、この端末で作ったイベントだけが表示されます</p>
       <InstallHint />
       {list.length === 0 ? (

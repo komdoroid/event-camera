@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import type { EventInfo } from '../api';
+import { loadHostToken } from '../host/hostLib';
 import { useThemeColor } from '../lib/useThemeColor';
 import { useAlive } from '../lib/useAlive';
 import { captureFrame } from './capture';
@@ -171,7 +173,7 @@ export default function CameraScreen({ event, guestId, initialRemaining, onFinis
 
   return (
     <section className="cam" data-wound={film.wound ? '1' : '0'}>
-      <div className="cam-top"><span className="lbl evname">{event.name}</span>{pending > 0 && <span className="lbl sending">送信中 {pending} 枚</span>}</div>
+      <div className="cam-top"><span className="lbl evname">{event.name}</span>{pending > 0 && <span className="lbl sending">送信中 {pending} 枚</span>}{loadHostToken(event.id) && <Link className="lbl hostback" to={`/host/${event.id}`}>管理画面へ</Link>}</div>
       <div className="cam-mid">
         <div className="viewf">
           <video ref={videoRef} playsInline muted autoPlay />

@@ -70,3 +70,5 @@
 .empty { display: grid; gap: 14px; justify-items: center; text-align: center; padding: 28px 8px; }
 .empty h1 { font-size: 22px; }
 .install h2 { font-size: 16px; }
+.hbtn.shoot { display: block; text-align: center; margin: 4px 0 14px; }
+.toast { position: sticky; top: 8px; z-index: 5; padding: 10px 14px; background: #a6d4e4; color: #3d3c48; border-radius: 10px; font-size: 13px; text-align: center; }

@@ -33,7 +33,7 @@ function ensure(id: string) {
   if (!e) {
     const q = new URLSearchParams(location.search);
     e = {
-      id, name: 'Kazuki & Misaki Wedding', shotLimit: Number(q.get('limit')) || 27,
+      id, name: 'ウェディングパーティー', shotLimit: Number(q.get('limit')) || 27,
       status: q.get('status') === 'published' ? 'published' : 'shooting',
       publishedAt: q.get('status') === 'published' ? new Date().toISOString() : null,
       stats: { guests: 0, photos: 0 }, hostToken: 'mock-token', photos: q.get('status') === 'published' ? seedPhotos(12) : [],

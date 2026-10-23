@@ -17,12 +17,13 @@ function save(list: MyEvent[]) {
   try { localStorage.setItem(KEY, JSON.stringify(list)); } catch { /* noop */ }
 }
 
-/** 追加または更新。既にある場合は作成日時を保ち、空でない名前だけ上書きする */
+/** 追加または更新。既にある場合は、空でない名前と、指定された作成日時だけ上書きする */
 export function upsertMyEvent(e: { id: string; name?: string; createdAt?: string }) {
   const list = loadMyEvents();
   const cur = list.find((x) => x.id === e.id);
   if (cur) {
     if (e.name) cur.name = e.name;
+    if (e.createdAt) cur.createdAt = e.createdAt; // 取り込みでは日付を上書きする
     save(list);
   } else {
     list.push({ id: e.id, name: e.name ?? '', createdAt: e.createdAt ?? new Date().toISOString() });

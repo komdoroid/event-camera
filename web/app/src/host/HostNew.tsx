@@ -5,6 +5,8 @@ import { upsertMyEvent } from './myEvents';
 import { saveHostToken } from './hostLib';
 import './host.css';
 
+const DEFAULT_NAME = 'ウェディングパーティー';
+
 export default function HostNew() {
   const nav = useNavigate();
   const [name, setName] = useState('');
@@ -15,11 +17,10 @@ export default function HostNew() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     const n = Math.floor(Number(limit));
-    if (!name.trim()) return setErr('イベント名を入力してください');
     if (!(n >= 1 && n <= 200)) return setErr('枚数は1〜200で指定してください');
     setBusy(true); setErr('');
     try {
-      const ev = await api.createEvent({ name: name.trim(), shotLimit: n });
+      const ev = await api.createEvent({ name: name.trim() || DEFAULT_NAME, shotLimit: n });
       saveHostToken(ev.id, ev.hostToken);
       upsertMyEvent({ id: ev.id, name: ev.name });
       nav(`/host/${ev.id}`);
@@ -34,7 +35,7 @@ export default function HostNew() {
       <h1>イベントを作る</h1>
       <p>作ると、ゲストに配るQRコードが表示されます。</p>
       <label>イベント名
-        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Kazuki & Misaki Wedding" maxLength={60} />
+        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="ウェディングパーティー" maxLength={60} />
       </label>
       <label>ゲスト1人あたりの枚数
         <input type="number" inputMode="numeric" value={limit} onChange={(e) => setLimit(e.target.value)} min={1} max={200} />
