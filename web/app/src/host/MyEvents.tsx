@@ -88,8 +88,8 @@ function AddByLink({ onClose, onDone }: { onClose: () => void; onDone: (msg: str
         <textarea className="linkarea" rows={5} value={text} onChange={(e) => setText(e.target.value)} placeholder="https://…/host/…#t=…" autoFocus />
         {err && <p className="err" role="alert">{err}</p>}
         <div className="hrow">
-          <button type="button" className="hbtn ghost" onClick={onClose} disabled={busy}>キャンセル</button>
-          <button type="button" className="hbtn" onClick={submit} disabled={busy || !text.trim()}>{busy ? '確認中…' : '追加する'}</button>
+          <button type="button" className="hbtn" onClick={onClose} disabled={busy}>キャンセル</button>
+          <button type="button" className="hbtn ghost" onClick={submit} disabled={busy || !text.trim()}>{busy ? '確認中…' : '追加する'}</button>
         </div>
       </div>
     </div>
@@ -110,7 +110,7 @@ export default function MyEvents() {
   }, []);
   return (
     <div className="host"><div className="host-in">
-      {toast && <div className="toast" role="status">{toast}</div>}
+      {toast && !adding && <div className="toast" role="status">{toast}</div>}
       <p className="notice">ログインなしの試作のため、この端末で作ったイベントだけが表示されます</p>
       <InstallHint />
       {list.length === 0 ? (
