@@ -93,9 +93,10 @@ export const mockApi: Api = {
     const photos = e.photos.filter((p) => p.blob).map((p) => ({ id: p.id, url: URL.createObjectURL(p.blob!), takenAt: p.takenAt }));
     return { event: pub(e), stats: pub(e).stats, pages: buildPages(photos) };
   },
-  async listPhotos(id) {
+  async listPhotos(id, token) {
     await wait();
     const e = ensure(id);
+    if (token !== e.hostToken) throw new ApiError(401);
     return { photos: e.photos.filter((p) => p.blob).map((p) => ({ id: p.id, url: URL.createObjectURL(p.blob!), takenAt: p.takenAt, guestId: p.guestId })) };
   },
   async createOrder(_id, _g, product) {

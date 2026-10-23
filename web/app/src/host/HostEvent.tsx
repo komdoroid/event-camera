@@ -3,16 +3,25 @@ import { Link, useParams } from 'react-router-dom';
 import QRCode from 'qrcode';
 import { api, type EventInfo, type HostPhoto } from '../api';
 import { upsertMyEvent } from './myEvents';
-import { adminLink, buildZip, guestUrl, loadHostToken, saveBlob, saveHostToken, takeTokenFromHash, withToken } from './hostLib';
+import { adminLink, buildZip, guestUrl, loadHostToken, parseHashToken, saveBlob, saveHostToken, withToken } from './hostLib';
+import { verifyHostToken } from './hostImport';
 import './host.css';
 
 export default function HostEvent() {
   const { eventId = '' } = useParams();
-  const [token, setToken] = useState(() => {
-    const t = takeTokenFromHash(eventId);
-    if (t) upsertMyEvent({ id: eventId }); // 管理用リンクで開いたイベントも一覧に入れる
-    return t ?? loadHostToken(eventId);
-  });
+  // ハッシュの #t= は、listPhotos で確認できるまで保存しない（保存済みのトークンは消さない）
+  const [pending] = useState(() => parseHashToken(location.hash));
+  const [token, setToken] = useState(() => loadHostToken(eventId));
+  useEffect(() => {
+    if (!pending) return;
+    try { history.replaceState(null, '', location.pathname + location.search); } catch { /* noop */ }
+    verifyHostToken(eventId, pending).then((ok) => {
+      if (!ok) return;
+      saveHostToken(eventId, pending);
+      upsertMyEvent({ id: eventId });
+      setToken(pending);
+    });
+  }, [eventId, pending]);
   const [input, setInput] = useState('');
   const [ev, setEv] = useState<EventInfo | null>(null);
   const [loadErr, setLoadErr] = useState(false);

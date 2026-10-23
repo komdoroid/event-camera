@@ -5,6 +5,9 @@ const key = (eventId: string) => `ec.hostToken.${eventId}`;
 export function saveHostToken(eventId: string, token: string) {
   try { localStorage.setItem(key(eventId), token); } catch { /* noop */ }
 }
+export function removeHostToken(eventId: string) {
+  try { localStorage.removeItem(key(eventId)); } catch { /* noop */ }
+}
 export function loadHostToken(eventId: string): string | null {
   try { return localStorage.getItem(key(eventId)); } catch { return null; }
 }

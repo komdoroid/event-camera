@@ -5,7 +5,7 @@ import { Cloud, Heart } from '../diary/Doodles';
 import { formatDot } from '../diary/format';
 import { detectPlatform, dismissInstall, installHint, isDismissed, isStandalone } from '../lib/install';
 import { loadMyEvents, removeMyEvent, upsertMyEvent, type MyEvent } from './myEvents';
-import { importFromHash } from './hostImport';
+import { addFromLinkText, importFromHash } from './hostImport';
 import './host.css';
 
 type BIPEvent = Event & { prompt: () => Promise<unknown> };
@@ -68,7 +68,36 @@ function EventCard({ ev, onRemove }: { ev: MyEvent; onRemove: () => void }) {
   );
 }
 
+function AddByLink({ onClose, onDone }: { onClose: () => void; onDone: (msg: string) => void }) {
+  const [text, setText] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+  async function submit() {
+    setBusy(true); setErr('');
+    const r = await addFromLinkText(text);
+    setBusy(false);
+    if (!r) { setErr('リンクを読み取れませんでした。管理用リンクをそのまま貼り付けてください。'); return; }
+    if (r.added === 0) { setErr('確認できませんでした。リンクが正しいか確かめてください。'); return; }
+    onDone(`${r.added}件追加しました` + (r.failed ? `。${r.failed}件は確認できませんでした` : ''));
+  }
+  return (
+    <div className="overlay" role="dialog" aria-modal="true" aria-label="リンクで追加">
+      <div className="dialog">
+        <h2>リンクで追加</h2>
+        <p className="notice">管理用リンクか取り込み用リンクを貼り付けてください。途中で改行や空白が入っていても大丈夫です。</p>
+        <textarea className="linkarea" rows={5} value={text} onChange={(e) => setText(e.target.value)} placeholder="https://…/host/…#t=…" autoFocus />
+        {err && <p className="err" role="alert">{err}</p>}
+        <div className="hrow">
+          <button type="button" className="hbtn ghost" onClick={onClose} disabled={busy}>キャンセル</button>
+          <button type="button" className="hbtn" onClick={submit} disabled={busy || !text.trim()}>{busy ? '確認中…' : '追加する'}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function MyEvents() {
+  const [adding, setAdding] = useState(false);
   const [list, setList] = useState<MyEvent[]>(loadMyEvents);
   const [target, setTarget] = useState<MyEvent | null>(null);
   const [toast, setToast] = useState('');
@@ -90,6 +119,7 @@ export default function MyEvents() {
           <h1>まだイベントがありません</h1>
           <p>最初のイベントを作って、ゲストに配るQRコードを出しましょう。</p>
           <Link className="hbtn" to="/host/new">最初のイベントをつくる</Link>
+          <button type="button" className="hbtn ghost" onClick={() => setAdding(true)}>リンクで追加</button>
           <Heart style={{ width: '40px', position: 'static' }} />
         </div>
       ) : (
@@ -97,6 +127,9 @@ export default function MyEvents() {
           {list.map((e) => <EventCard key={e.id} ev={e} onRemove={() => setTarget(e)} />)}
         </ul>
       )}
+      {list.length > 0 && <button type="button" className="hbtn ghost addlink" onClick={() => setAdding(true)}>リンクで追加</button>}
+      <p className="notice">別の端末・ホーム画面のアプリで見るときは、管理用リンクを貼り付けて追加できます</p>
+      {adding && <AddByLink onClose={() => setAdding(false)} onDone={(m) => { setAdding(false); setList(loadMyEvents()); setToast(m); setTimeout(() => setToast(''), 4000); }} />}
       {target && (
         <div className="overlay" role="dialog" aria-modal="true" aria-label="一覧から外す確認">
           <div className="dialog">
