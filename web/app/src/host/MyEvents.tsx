@@ -74,7 +74,7 @@ function EventCard({ ev, onRemove, onInfo }: { ev: MyEvent; onRemove: () => void
           {info && <span className={`chip ${info.status}`}>{info.status === 'published' ? '現像済み' : '撮影中'}</span>}
         </span>
         {info ? (
-          <span className="evstats">ゲスト {info.stats.guests} 人 ・ {info.stats.photos} 枚{info.status === 'published' && info.sales ? ` ・ 売れた ${info.sales.digital + info.sales.print} 冊` : ''}</span>
+          <span className="evstats">ゲスト {info.stats.guests} 人 ・ {info.stats.photos} 枚</span>
         ) : failed ? (
           <span className="evstats small">状況を取得できません</span>
         ) : (

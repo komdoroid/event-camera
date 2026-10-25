@@ -102,9 +102,6 @@
 .host .card.stage { background: #fff; }
 .host .card.stage::before { border-style: solid; }
 .stage .chip { justify-self: start; }
-.stats.three { grid-template-columns: repeat(3, 1fr); }
-.stats.three b { font-size: 26px; }
-.sales { display: grid; gap: 8px; padding-top: 12px; border-top: var(--line-w) dashed var(--h-line); }
 
 /* マイイベント: 表紙 */
 .evcover { flex: none; width: 76px; height: 76px; align-self: center; display: grid; place-items: center; overflow: hidden; border: var(--line-w) dashed var(--page-line); border-radius: 14px 6px 12px 6px; background: var(--page-soft); }
@@ -203,7 +200,6 @@
 .thumbs img:nth-child(4n+2) { box-shadow: 0 0 0 2px var(--h-mint); }
 .thumbs img:nth-child(4n+3) { box-shadow: 0 0 0 2px var(--h-pink); }
 .thumbs img:nth-child(4n) { box-shadow: 0 0 0 2px var(--h-purple); }
-.sales { border-top-color: var(--h-orange); }
 .dialog { box-shadow: 4px 5px 0 var(--theme, var(--h-yellow)); }
 .overlay.full { background: var(--theme-tint, var(--page-bg)); }
 
@@ -233,3 +229,5 @@
 /* 見出しの折り返しと字間 */
 .htitle, .host h1, .host h2, .hprint h1, .intro h1, .evtitle span { line-break: strict; word-break: auto-phrase; text-wrap: balance; letter-spacing: .01em; }
 .host h1, .hprint h1, .evtitle span { word-break: keep-all; }
+
+.donehero { width: 96px !important; justify-self: center; margin: 4px 0; }

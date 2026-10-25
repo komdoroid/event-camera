@@ -14,14 +14,12 @@ export interface EventInfo {
   status: EventStatus;
   publishedAt: string | null;
   stats: { guests: number; photos: number; uploaded?: number };
-  /** 有効なホストトークン送信時のみ */
-  sales?: { digital: number; print: number; revenue: number };
 }
 export interface GuestStatus { taken: number; remaining: number }
 export interface ShotTicket { photoId: string; uploadUrl: string; expiresAt: string; remaining: number }
 export interface AlbumPhoto { id: string; url: string; takenAt: string; mine?: boolean }
 export interface Album {
-  event: Omit<EventInfo, 'coverPhotoId' | 'stats' | 'sales'>;
+  event: Omit<EventInfo, 'coverPhotoId' | 'stats'>;
   stats: { guests: number; photos: number };
   pages: { layout: string; photos: AlbumPhoto[] }[];
 }

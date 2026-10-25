@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import QRCode from 'qrcode';
 import { api, type EventInfo, type HostPhoto } from '../api';
 import Phrase from '../lib/Phrase';
+import { Envelope } from '../diary/Doodles';
 import { KindIcon } from '../lib/KindIcon';
 import { themeStyle } from '../lib/kinds';
 import { hostStage, notifyText, type Stage } from './stage';
@@ -114,7 +115,6 @@ export default function HostEvent() {
   }
 
   const stage: Stage = ev ? hostStage(ev) : 'ready'; // 取得できない間も QR は出す
-  const sold = ev?.sales ? ev.sales.digital + ev.sales.print : 0;
   const qrButtons = (primary: boolean) => (
     <div className="hrow">
       <Link className={'hbtn' + (primary ? ' ghost' : '')} to={`/host/${eventId}/print`}>QRカードを印刷</Link>
@@ -156,21 +156,11 @@ export default function HostEvent() {
       {stage === 'developed' && ev && (
         <section className="card stage">
           <span className="chip published">現像済み</span>
+          <Envelope className="flow donehero" />
           <h2>絵日記ができました</h2>
           <p>ゲストに知らせましょう。QRを読んだのと同じページから、絵日記が見られます。</p>
           <button type="button" className="hbtn ghost" onClick={notify}>{notified ? '文面をコピーしました' : 'ゲストに知らせる'}</button>
           <Link className="hbtn shoot" to={`/e/${eventId}/album`}>アルバムを見る</Link>
-          {ev.sales && (
-            <div className="sales">
-              <h2>売れた数</h2>
-              <div className="stats three">
-                <div><b>{ev.sales.digital}</b><span>デジタル</span></div>
-                <div><b>{ev.sales.print}</b><span>印刷</span></div>
-                <div><b>¥{ev.sales.revenue.toLocaleString('ja-JP')}</b><span>合計</span></div>
-              </div>
-              <p className="notice">合計 {sold} 冊。本番では、この売上の一部がホストのものになります（試作の表示です）。</p>
-            </div>
-          )}
         </section>
       )}
 

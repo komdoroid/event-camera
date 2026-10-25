@@ -4,7 +4,7 @@ import { ApiError, type Api, type EventInfo, type EventKind } from './types';
  * メモリ上のモック API（VITE_USE_MOCK_API=1）。リロードで消える。
  * URL に ?limit=3 を付けると枚数上限、?status=published で現像済みを試せる。
  */
-const events = new Map<string, EventInfo & { hostToken: string; salesCount: { digital: number; print: number }; photos: { id: string; guestId: string; takenAt: string; blob?: Blob }[] }>();
+const events = new Map<string, EventInfo & { hostToken: string; photos: { id: string; guestId: string; takenAt: string; blob?: Blob }[] }>();
 function seedPhotos(n: number) {
   return Array.from({ length: n }, (_, i) => ({
     id: uid(), guestId: `dummy-${i % 3}`, takenAt: new Date(2026, 9, 25, 14, 20 + i * 7).toISOString(),
@@ -38,7 +38,7 @@ function ensure(id: string) {
       id, name: 'ウェディングパーティー', kind, message: 'みんなの一枚を残そう', coverPhotoId: null, shotLimit: Number(q.get('limit')) || 27,
       status: q.get('status') === 'published' ? 'published' : 'shooting',
       publishedAt: q.get('status') === 'published' ? new Date().toISOString() : null,
-      stats: { guests: 0, photos: 0 }, hostToken: 'mock-token', salesCount: { digital: 2, print: 1 }, photos: q.get('status') === 'published' ? seedPhotos(12) : [],
+      stats: { guests: 0, photos: 0 }, hostToken: 'mock-token', photos: q.get('status') === 'published' ? seedPhotos(12) : [],
     };
     events.set(id, e);
   }
@@ -48,7 +48,6 @@ const pub = (e: ReturnType<typeof ensure>, token?: string): EventInfo => ({
   id: e.id, name: e.name, kind: e.kind, message: e.message,
   coverPhotoId: e.status === 'published' || token === e.hostToken ? (e.photos.find((p) => p.blob)?.id ?? null) : null, shotLimit: e.shotLimit, status: e.status, publishedAt: e.publishedAt,
   stats: { guests: new Set(e.photos.map((p) => p.guestId)).size, photos: e.photos.length, uploaded: e.photos.filter((p) => p.blob).length },
-  ...(token === e.hostToken ? { sales: { digital: e.salesCount.digital, print: e.salesCount.print, revenue: e.salesCount.digital * 500 + e.salesCount.print * 3000 } } : {}),
 });
 
 export const mockApi: Api = {
