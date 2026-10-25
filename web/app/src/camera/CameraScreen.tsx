@@ -5,7 +5,7 @@ import { loadHostToken } from '../host/hostLib';
 import { useThemeColor } from '../lib/useThemeColor';
 import { useAlive } from '../lib/useAlive';
 import { copyFor } from '../diary/copy';
-import { Cloud, Star, Wash } from '../diary/Doodles';
+import { Star, Sun, Wash } from '../diary/Doodles';
 import PermissionHelp from './PermissionHelp';
 import { captureFrame } from './capture';
 import { refund, shoot, startFilm, wind, WIND_NEED, type Film } from './film';
@@ -224,7 +224,7 @@ export default function CameraScreen({ event, guestId, initialRemaining, onFinis
           <div className="diary"><div className="dpage screen">
             <Wash color="blue" style={{ left: '-10cqw', top: '10cqw', width: '80cqw', height: '60cqw' }} />
             <Wash color="pink" style={{ right: '-12cqw', bottom: '-8cqw', width: '70cqw', height: '60cqw' }} />
-            <Cloud className="flow bob" style={{ width: '22cqw' }} />
+            <Sun className="flow bob" style={{ width: '22cqw' }} />
             <p className="note" style={{ position: 'relative', zIndex: 1 }}>{C.welcomeLead}</p>
             <h1 className="dtitle">{event.name}</h1>
             {event.message && <p className="hostmsg">{event.message}</p>}

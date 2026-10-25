@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { api, type Album, type AlbumPhoto, type Order, type Product } from '../api';
 import { getGuestId } from '../lib/guestId';
 import { copyFor } from './copy';
-import { Arrow, Book, Cloud, Heart, Phone, Star, Sun, Wash } from './Doodles';
+import { Arrow, Book, Heart, Phone, Star, Sun, Wash } from './Doodles';
 import { LoadPhoto } from './LoadPhoto';
 import { formatDay, formatDot, formatTime, pageKind, shortOrder, yen } from './format';
 import { clampPage, countMine, loadPurchased, printPageCount, savePurchased, swipeDir, totalPages, visiblePages } from './paging';
@@ -20,7 +20,7 @@ function Cover({ album, page, C }: { album: Album; page: Page; C: CopyT }) {
       <Wash color="pink" style={{ right: '-12cqw', bottom: '-8cqw', width: '70cqw', height: '60cqw' }} />
       <div className="note vol">{C.albumTitle.join('')} ・ {C.vol}{p ? ` ・ ${formatDot(p.takenAt)}` : ''}</div>
       <h1 style={{ fontSize: album.event.name.length > 12 ? '9cqw' : '12cqw' }}>{album.event.name}</h1>
-      {p && <LoadPhoto src={p.url} tilt={2.5} tape ratio="5 / 4" />}
+      {p && <LoadPhoto src={p.url} mine={!!p.mine} tilt={2.5} tape ratio="5 / 4" />}
       <div className="note evn">{C.endStats(album.stats.guests, album.stats.photos)}</div>
       <Heart style={{ right: '6cqw', top: '44cqw', width: '12cqw' }} />
     </section>
@@ -45,7 +45,7 @@ function Diary({ page, index, C }: { page: Page; index: number; C: CopyT }) {
         ))}
       </div>
       <div className="dlines"><p className="note">{memo}<br />{formatTime(first.takenAt)} ・ {C.attribution}</p></div>
-      <div className="dtail">{index % 2 ? <Arrow style={{ width: '14cqw' }} /> : <Star />}{index % 3 === 0 ? <Heart /> : <Cloud style={{ width: '14cqw' }} />}</div>
+      <div className="dtail">{index % 2 ? <Arrow style={{ width: '14cqw' }} /> : <Star />}{index % 3 === 0 ? <Heart /> : <Sun style={{ width: '12cqw' }} />}</div>
     </section>
   );
 }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api, photoUrl, type EventInfo } from '../api';
-import { Cloud, Heart } from '../diary/Doodles';
+import { Book, Heart } from '../diary/Doodles';
 import { formatDot } from '../diary/format';
 import { detectPlatform, dismissInstall, installHint, isDismissed, isInstallShown, isStandalone, markInstallShown } from '../lib/install';
 import { KindIcon } from '../lib/KindIcon';
@@ -137,7 +137,7 @@ export default function MyEvents() {
       {list.length > 0 && <InstallHint />}
       {list.length === 0 ? (
         <div className="empty">
-          <Cloud className="flow" style={{ width: '90px', position: 'static' }} />
+          <Book style={{ width: '56px', position: 'static' }} />
           <h1>まだイベントがありません</h1>
           <p>最初のイベントを作って、ゲストに配るQRコードを出しましょう。</p>
           <Link className="hbtn ghost" to="/host/new">最初のイベントをつくる</Link>

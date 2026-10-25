@@ -23,8 +23,8 @@ const row = (kinds: EventKind[]) => <div className="introicons">{kinds.map((k) =
 
 const CARDS = [
   { title: 'イベントをつくる', text: '誕生日、飲み会、同窓会、旅行、社内イベント…。名前をつけて、QRコードを配るだけです。', art: row(['birthday', 'party', 'reunion', 'trip', 'company']) },
-  { title: 'みんなが撮る', text: 'ゲストはQRを読むだけ。アプリも登録もいりません。現像するまで、だれも写真を見られません。', art: <div className="introicons"><KindIcon kind="trip" size={40} /><Phone style={{ width: 54 }} /><KindIcon kind="birthday" size={40} /></div> },
-  { title: '絵日記がとどいて、みんなが買える', text: '現像すると、みんなの写真が1冊の絵日記になります。気に入ったら、ゲストが買って手元にのこせます。', art: <div className="introicons"><Envelope style={{ width: 80 }} /><Book style={{ width: 54 }} /><Star style={{ width: 36 }} /></div> },
+  { title: 'みんなが撮る', text: 'ゲストはQRを読むだけ。アプリも登録もいりません。現像するまで、だれも写真を見られません。', art: <div className="introicons"><KindIcon kind="trip" size={40} /><Phone style={{ width: 54, position: 'static' }} /><KindIcon kind="birthday" size={40} /></div> },
+  { title: '絵日記がとどいて、みんなが買える', text: '現像すると、みんなの写真が1冊の絵日記になります。気に入ったら、ゲストが買って手元にのこせます。', art: <div className="introicons"><Envelope style={{ width: 80, position: 'static' }} /><Book style={{ width: 54, position: 'static' }} /><Star style={{ width: 36, position: 'static' }} /></div> },
 ];
 
 /** 初回だけ出す3枚の紹介。スワイプか「つぎへ」で進む */

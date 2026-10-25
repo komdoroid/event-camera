@@ -1,4 +1,4 @@
-import { Cloud, Envelope, Heart, Star, Wash } from './Doodles';
+import { Envelope, Heart, Star, Wash } from './Doodles';
 import { copyFor } from './copy';
 import type { EventKind } from '../api/types';
 import { usePendingUploads } from '../camera/usePending';
@@ -12,7 +12,7 @@ export function WaitScreen({ shotLimit, eventName, kind }: { shotLimit: number; 
     <div className="diary"><div className="dpage screen">
       <Wash color="blue" style={{ left: '-10cqw', top: '20cqw', width: '80cqw', height: '70cqw' }} />
       <Wash color="pink" style={{ right: '-12cqw', bottom: '-8cqw', width: '70cqw', height: '60cqw' }} />
-      <Cloud className="flow bob" />
+      <Star className="flow bob" />
       <h1 className="dtitle">{COPY.waitTitle(shotLimit)}</h1>
       <p>{COPY.waitBody}</p>
       <p className="note">{eventName}</p>
