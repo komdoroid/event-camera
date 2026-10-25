@@ -5,6 +5,7 @@ import './index.css';
 import GuestPage from './pages/GuestPage';
 import { WobDefs } from './diary/Doodles';
 import HostShell from './host/HostShell';
+import HostPrint from './host/HostPrint';
 import MyEvents from './host/MyEvents';
 import { AlbumPage, HostEventPage, HostNewPage } from './pages/HostPages';
 
@@ -16,6 +17,7 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/e/:eventId" element={<GuestPage />} />
         <Route path="/e/:eventId/album" element={<AlbumPage />} />
         <Route path="/" element={<Navigate to="/host" replace />} />
+        <Route path="/host/:eventId/print" element={<HostPrint />} />
         <Route path="/host" element={<HostShell />}>
           <Route index element={<MyEvents />} />
           <Route path="new" element={<HostNewPage />} />

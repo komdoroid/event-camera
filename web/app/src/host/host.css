@@ -76,3 +76,83 @@
 .linkarea { font: inherit; font-size: 16px; color: var(--page-ink); padding: 12px; border: var(--line-w) solid var(--page-line); border-radius: var(--radius); background: var(--page-bg); width: 100%; box-sizing: border-box; resize: vertical; word-break: break-all; }
 .hbtn.addlink { width: 100%; margin: 12px 0 8px; }
 .dialog .err { color: #c0392b; font-size: 13px; margin: 0; }
+
+/* 種類タイル・作成フォーム */
+.host .kinds { border: 0; padding: 0; min-width: 0; display: grid; gap: 8px; }
+.host .kinds legend { font-size: 13px; color: var(--page-mute); margin-bottom: 8px; }
+.kindgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.kindtile { display: grid; justify-items: center; align-content: center; gap: 4px; min-height: 84px; padding: 8px 4px; border: var(--line-w) dashed var(--page-line); border-radius: 16px 6px 14px 8px; background: var(--page-bg); color: var(--page-ink); font-family: inherit; font-size: 12px; line-height: 1.3; text-align: center; transition: transform .08s; }
+.kindtile:active { transform: scale(.96); }
+.kindtile.on { border-style: solid; background: var(--h-blue); font-weight: 600; }
+.host .hint { font-size: 12px; color: var(--page-mute); }
+.host .counter { text-align: right; }
+.host textarea.linkarea { word-break: normal; }
+
+/* 管理画面の段階カード */
+.evtitle { display: flex; align-items: center; gap: 10px; }
+.evtitle span { min-width: 0; overflow-wrap: anywhere; }
+.host .card.stage { background: #fff; }
+.host .card.stage::before { border-style: solid; }
+.stage .chip { justify-self: start; }
+.stats.three { grid-template-columns: repeat(3, 1fr); }
+.stats.three b { font-size: 26px; }
+.sales { display: grid; gap: 8px; padding-top: 12px; border-top: var(--line-w) dashed var(--h-line); }
+
+/* マイイベント: 表紙 */
+.evcover { flex: none; width: 76px; height: 76px; align-self: center; display: grid; place-items: center; overflow: hidden; border: var(--line-w) dashed var(--page-line); border-radius: 14px 6px 12px 6px; background: var(--page-soft); }
+.evcover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.evmain { flex-direction: row; display: flex; align-items: center; gap: 12px; padding-left: 12px; }
+.evtext { display: grid; gap: 6px; min-width: 0; flex: 1 1 auto; }
+.evtext > * { min-width: 0; }
+.evstats { overflow-wrap: anywhere; }
+
+/* サンプルのリンク */
+.samples { display: grid; gap: 8px; justify-items: center; text-align: center; }
+.samples h2 { font-size: 15px; }
+.samplerow { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.chip.sample { padding: 6px 14px; font-size: 14px; text-decoration: none; background: var(--page-bg); }
+.chip.sample:active { background: var(--h-blue); }
+
+/* はじめの紹介 */
+.intro { position: fixed; inset: 0; z-index: 80; display: flex; flex-direction: column; background: var(--page-bg); color: var(--page-ink); font-family: var(--f-klee); padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
+.introtop { flex: none; display: flex; justify-content: flex-end; min-height: 52px; padding: 4px 10px; }
+.introskip { min-height: 44px; padding: 0 14px; color: var(--page-mute); font-family: inherit; font-size: 14px; }
+.introtrack { flex: 1 1 0; min-height: 0; display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
+.introtrack::-webkit-scrollbar { display: none; }
+.introcard { flex: 0 0 100%; scroll-snap-align: center; overflow-y: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 8px 28px; text-align: center; }
+.introcard h1 { font-family: var(--f-heading); font-size: 24px; line-height: 1.4; }
+.introcard p { color: var(--page-mute); font-size: 15px; line-height: 1.8; max-width: 22em; }
+.introicons { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 14px; min-height: 100px; }
+.introact { display: grid; gap: 18px; justify-items: center; width: 100%; max-width: 320px; margin-top: 6px; }
+.introact .hbtn { width: 100%; }
+.introbot { flex: none; display: grid; gap: 14px; justify-items: center; padding: 8px 28px 20px; min-height: 96px; align-content: end; }
+.introbot .hbtn { width: 100%; max-width: 320px; }
+.dots { display: flex; gap: 8px; }
+.dots i { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--page-line); }
+.dots i.on { background: var(--h-pink); }
+
+/* QRカードの印刷 */
+.hprint { position: fixed; inset: 0; overflow-y: auto; background: var(--page-bg); color: var(--page-ink); font-family: var(--f-klee); padding: 14px 16px 32px; display: grid; gap: 14px; align-content: start; justify-items: center; }
+.hprint > * { width: 100%; max-width: 420px; }
+.hprint-bar { display: flex; gap: 10px; justify-content: space-between; padding-top: env(safe-area-inset-top); }
+.pcards { display: grid; gap: 16px; }
+.pcard { aspect-ratio: 105 / 148; border: var(--line-w) dashed var(--page-line); border-radius: 18px 6px 16px 8px; padding: 6% 7%; display: flex; flex-direction: column; align-items: center; gap: 2.5%; text-align: center; overflow: hidden; }
+.pcard h1 { font-family: var(--f-heading); font-size: 22px; line-height: 1.3; overflow-wrap: anywhere; }
+.pnote { font-size: 13px; line-height: 1.6; color: var(--page-mute); overflow-wrap: anywhere; max-height: 5em; overflow: hidden; }
+.pcard img { width: 55%; image-rendering: pixelated; margin-top: auto; }
+.pcard ol { margin: 0; padding: 0; list-style: none; counter-reset: s; font-family: var(--f-note); font-size: 15px; line-height: 1.7; }
+.pcard li { counter-increment: s; }
+.pcard li::before { content: counter(s) ". "; color: #d98f86; }
+@media print {
+  @page { size: A4; margin: 0; }
+  html, body, #root { height: auto !important; overflow: visible !important; background: #fff !important; }
+  .noprint { display: none !important; }
+  .hprint { position: static; display: block; padding: 0; overflow: visible; }
+  .hprint > * { max-width: none; }
+  .pcards { width: 210mm; height: 297mm; grid-template-columns: 105mm 105mm; grid-template-rows: 148mm 148mm; gap: 0; break-inside: avoid; }
+  .pcard { width: 105mm; height: 148mm; aspect-ratio: auto; border: 0.3mm dashed #aaa; border-radius: 0; padding: 8mm 9mm; gap: 3mm; }
+  .pcard h1 { font-size: 18pt; }
+  .pnote { font-size: 10pt; }
+  .pcard img { width: 52mm; }
+  .pcard ol { font-size: 12pt; }
+}

@@ -9,7 +9,7 @@ import { AnnounceScreen, WaitScreen } from '../diary/Screens';
 type Load =
   | { s: 'loading' }
   | { s: 'error' }
-  | { s: 'ready'; event: EventInfo; remaining: number };
+  | { s: 'ready'; event: EventInfo; remaining: number; taken: number };
 
 export default function GuestPage() {
   const { eventId = '' } = useParams();
@@ -32,7 +32,7 @@ export default function GuestPage() {
     setLoad({ s: 'loading' });
     setLatest(null);
     Promise.all([api.getEvent(eventId), api.getGuest(eventId, getGuestId())])
-      .then(([event, g]) => alive && setLoad({ s: 'ready', event, remaining: g.remaining }))
+      .then(([event, g]) => alive && setLoad({ s: 'ready', event, remaining: g.remaining, taken: g.taken }))
       .catch(() => alive && setLoad({ s: 'error' }));
     return () => { alive = false; };
   }, [eventId, tick]);
@@ -47,14 +47,14 @@ export default function GuestPage() {
       </div>
     );
 
-  const { remaining } = load;
+  const { remaining, taken } = load;
   const event = latest ?? load.event;
   const back = loadHostToken(eventId) ? <Link className="lbl hostback fixed" to={`/host/${eventId}`}>管理画面へ</Link> : null;
   // 現像済み: 「絵日記がとどきました」
   if (event.status === 'published')
     return <>{back}<AnnounceScreen eventName={event.name} guests={event.stats.guests} onOpen={() => nav(`/e/${eventId}/album`)} /></>;
   // 撮り切り: 現像待ち（現像されたら自動で切りかわる）
-  if (finished || remaining <= 0) return <>{back}<WaitScreen shotLimit={event.shotLimit} eventName={event.name} /></>;
+  if (finished || remaining <= 0) return <>{back}<WaitScreen shotLimit={event.shotLimit} eventName={event.name} kind={event.kind} /></>;
 
-  return <CameraScreen event={event} guestId={getGuestId()} initialRemaining={remaining} onFinished={() => setFinished(true)} onClosed={() => setLatest({ ...event, status: 'published' })} />;
+  return <CameraScreen welcome={taken === 0} event={event} guestId={getGuestId()} initialRemaining={remaining} onFinished={() => setFinished(true)} onClosed={() => setLatest({ ...event, status: 'published' })} />;
 }

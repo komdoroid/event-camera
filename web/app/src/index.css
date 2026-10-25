@@ -65,3 +65,10 @@ button { font: inherit; color: inherit; background: transparent; border: 0; curs
 }
 .hostback { margin-left: auto; flex: none; color: var(--night-mute); text-decoration: none; padding: 10px 0 10px 12px; border-bottom: 1px dotted currentColor; }
 .hostback.fixed { position: fixed; z-index: 20; top: 8px; right: 16px; margin: 0; padding: 6px 0; background: none; }
+
+/* カメラ許可の案内（黒の画面の中） */
+.deny { display: grid; gap: 10px; max-width: 320px; text-align: left; }
+.deny-t { color: var(--night-ink) !important; font-size: 16px !important; font-weight: 700; text-align: center; }
+.deny-box { border: 1px solid var(--night-mute); padding: 10px 12px; color: var(--night-ink); font-size: 13px; line-height: 1.7; }
+.deny-box ol { padding-left: 1.3em; color: var(--night-mute); }
+.start { overflow-y: auto; }

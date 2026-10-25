@@ -28,3 +28,12 @@ export function installHint(o: { standalone: boolean; dismissed: boolean; platfo
   if (o.platform === 'ios') return 'ios';
   return null;
 }
+
+// 案内は「最初のイベントを作ったあと」に1回だけ出す。出したことを覚えておく
+const SHOWN_KEY = 'ec.installShown';
+export function isInstallShown(): boolean {
+  try { return localStorage.getItem(SHOWN_KEY) === '1'; } catch { return true; }
+}
+export function markInstallShown() {
+  try { localStorage.setItem(SHOWN_KEY, '1'); } catch { /* noop */ }
+}

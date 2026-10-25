@@ -4,12 +4,15 @@ import type { EventInfo } from '../api';
 import { loadHostToken } from '../host/hostLib';
 import { useThemeColor } from '../lib/useThemeColor';
 import { useAlive } from '../lib/useAlive';
+import { copyFor } from '../diary/copy';
+import { Cloud, Star, Wash } from '../diary/Doodles';
+import PermissionHelp from './PermissionHelp';
 import { captureFrame } from './capture';
 import { refund, shoot, startFilm, wind, WIND_NEED, type Film } from './film';
 import { uploadQueue, type FailReason } from './uploader';
 import { usePendingUploads } from './usePending';
 
-interface Props { event: EventInfo; guestId: string; initialRemaining: number; onFinished: () => void; onClosed: () => void }
+interface Props { event: EventInfo; guestId: string; initialRemaining: number; onFinished: () => void; onClosed: () => void; welcome?: boolean }
 type Cam = 'idle' | 'starting' | 'live' | 'error';
 
 const pad = (n: number) => (n < 10 ? '0' : '') + n;
@@ -39,11 +42,14 @@ function Roll({ value }: { value: number }) {
   );
 }
 
-export default function CameraScreen({ event, guestId, initialRemaining, onFinished, onClosed }: Props) {
+export default function CameraScreen({ event, guestId, initialRemaining, onFinished, onClosed, welcome = false }: Props) {
   const [film, setFilm] = useState<Film>(() => startFilm(initialRemaining));
   const filmRef = useRef(film);
   const [cam, setCam] = useState<Cam>('idle');
   const [errMsg, setErrMsg] = useState('');
+  const [denied, setDenied] = useState(false);
+  const C = copyFor(event.kind);
+  const showWelcome = welcome && (cam === 'idle' || cam === 'starting');
   const [now, setNow] = useState(() => new Date());
   const [toast, setToast] = useState('');
   const [wx, setWx] = useState(0);
@@ -54,7 +60,7 @@ export default function CameraScreen({ event, guestId, initialRemaining, onFinis
   const finishTimer = useRef(0);
   const toastTimer = useRef(0);
   const alive = useAlive();
-  useThemeColor('#0b0c0f');
+  useThemeColor(showWelcome ? '#ffffff' : '#0b0c0f');
   const pending = usePendingUploads();
 
   const update = (f: Film) => { filmRef.current = f; setFilm(f); };
@@ -78,6 +84,7 @@ export default function CameraScreen({ event, guestId, initialRemaining, onFinis
   // iOS Safari はユーザー操作から開始する必要があるため、ボタンで呼ぶ
   async function startCamera() {
     setCam('starting');
+    setDenied(false);
     try {
       if (!navigator.mediaDevices?.getUserMedia) throw new Error('unsupported');
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -92,11 +99,8 @@ export default function CameraScreen({ event, guestId, initialRemaining, onFinis
       setCam('live');
     } catch (e) {
       const name = (e as DOMException).name;
-      setErrMsg(
-        name === 'NotAllowedError'
-          ? 'カメラが許可されませんでした。ブラウザの設定で許可してからもう一度お試しください。'
-          : 'カメラを開始できませんでした。HTTPS で開いているか、ほかのアプリがカメラを使っていないか確認してください。',
-      );
+      setDenied(name === 'NotAllowedError');
+      setErrMsg('カメラを開始できませんでした。HTTPS で開いているか、ほかのアプリがカメラを使っていないか確認してください。');
       setCam('error');
     }
   }
@@ -118,6 +122,7 @@ export default function CameraScreen({ event, guestId, initialRemaining, onFinis
     if (!cur.wound && cur.remaining > 0) { nudge(); return; }
     const next = shoot(cur);
     if (!next) return;
+    navigator.vibrate?.(30); // 非対応の端末では何もしない
     const video = videoRef.current!;
     const jpeg = captureFrame(video); // クリック時点のフレームを取り込む
     update(next);
@@ -184,11 +189,11 @@ export default function CameraScreen({ event, guestId, initialRemaining, onFinis
           {toast && <div className="vf-toast" role="status">{toast}</div>}
           <div className="vf-br">{stampOf(now)}</div>
         </div>
-        {cam !== 'live' && (
+        {cam !== 'live' && !showWelcome && (
           <div className="start">
-            {cam === 'error' && <p role="alert">{errMsg}</p>}
+            {cam === 'error' && (denied ? <PermissionHelp /> : <p role="alert">{errMsg}</p>)}
             <button type="button" className="btn" onClick={startCamera} disabled={cam === 'starting'}>
-              {cam === 'starting' ? '起動中…' : cam === 'error' ? 'もう一度ためす' : 'カメラをはじめる'}
+              {cam === 'starting' ? '起動中…' : cam === 'error' ? C.denied.retry : C.welcome.start}
             </button>
             {cam === 'idle' && <p>撮った写真は、現像されるまで見られません。<br />残り {film.remaining} 枚。</p>}
           </div>
@@ -214,6 +219,21 @@ export default function CameraScreen({ event, guestId, initialRemaining, onFinis
         </div>
       </div>
       <div className="flash" ref={flashRef} />
+      {showWelcome && (
+        <div className="welcome-ov">
+          <div className="diary"><div className="dpage screen">
+            <Wash color="blue" style={{ left: '-10cqw', top: '10cqw', width: '80cqw', height: '60cqw' }} />
+            <Wash color="pink" style={{ right: '-12cqw', bottom: '-8cqw', width: '70cqw', height: '60cqw' }} />
+            <Cloud className="flow bob" style={{ width: '22cqw' }} />
+            <p className="note" style={{ position: 'relative', zIndex: 1 }}>{C.welcomeLead}</p>
+            <h1 className="dtitle">{event.name}</h1>
+            {event.message && <p className="hostmsg">{event.message}</p>}
+            <ul className="rules">{C.welcome.rules(event.shotLimit).map((r, i) => <li key={r}><b>{i + 1}</b>{r}</li>)}</ul>
+            <Star className="flow" style={{ width: '9cqw' }} />
+            <button type="button" className="hbtn2" onClick={startCamera} disabled={cam === 'starting'}>{cam === 'starting' ? C.welcome.starting : C.welcome.start}</button>
+          </div></div>
+        </div>
+      )}
     </section>
   );
 }

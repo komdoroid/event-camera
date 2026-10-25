@@ -1,4 +1,7 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { isIntroSeen } from '../lib/intro';
+import Intro from './Intro';
 import './host.css';
 
 const Icon = ({ d }: { d: string }) => (
@@ -17,8 +20,10 @@ export default function HostShell() {
   const nav = useNavigate();
   const root = pathname === '/host' || pathname === '/host/';
   const isNew = pathname === '/host/new';
+  const [intro, setIntro] = useState(() => !isIntroSeen());
   return (
     <div className="hshell">
+      {intro && root && <Intro onClose={() => setIntro(false)} />}
       <header className="htop">
         {!root && !isNew ? (
           <button type="button" className="hback" aria-label="マイイベントにもどる" onClick={() => nav('/host')}>
