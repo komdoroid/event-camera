@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { api, type Album, type AlbumPhoto, type Order, type Product } from '../api';
 import { getGuestId } from '../lib/guestId';
+import { loadHostToken } from '../host/hostLib';
+import { backTarget } from './backTarget';
 import { coverStyle, pageColorStyle, themeStyle } from '../lib/kinds';
 import { copyFor } from './copy';
 import type { CSSProperties } from 'react';
@@ -167,6 +169,21 @@ function Done({ order, album, C, eventId, onBack }: { order: Order; album: Album
   );
 }
 
+function BackButton({ eventId, spacer = true }: { eventId: string; spacer?: boolean }) {
+  const nav = useNavigate();
+  const loc = useLocation();
+  const go = () => {
+    const t = backTarget({ eventId, locationKey: loc.key, hasHostToken: !!loadHostToken(eventId) });
+    if (t.type === 'history') nav(-1); else nav(t.path, { replace: true });
+  };
+  return (
+    <>
+      <button type="button" className="backbtn" onClick={go} aria-label="もどる">‹ もどる</button>
+      {spacer && <div className="backgap" aria-hidden="true" />}
+    </>
+  );
+}
+
 export default function AlbumPage() {
   const { eventId = '' } = useParams();
   const [album, setAlbum] = useState<Album | null>(null);
@@ -202,9 +219,9 @@ export default function AlbumPage() {
 
   if (state !== 'ok' || !album)
     return (
-      <div className="diary"><div className="dpage screen">
+      <div className="diary"><BackButton eventId={eventId} spacer={false} /><div className="dpage screen">
         {state === 'loading' ? <p>…</p> : state === 'closed' ? (
-          <><h1 className="dtitle">まだ現像前です</h1><p>現像されるまで、絵日記は開けません。</p><Link className="hbtn2" to={`/e/${eventId}`}>もどる</Link></>
+          <><h1 className="dtitle">まだ現像前です</h1><p>現像されるまで、絵日記は開けません。</p></>
         ) : (
           <><p className="errtxt">{C.albumLoadError}</p><button className="hbtn2 pri" onClick={() => setTick((t) => t + 1)}>{C.retry}</button></>
         )}
@@ -230,6 +247,7 @@ export default function AlbumPage() {
       onTouchStart={(e) => { touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }}
       onTouchEnd={onTouchEnd}
     >
+      <BackButton eventId={eventId} />
       {view === 'album' && (
         <>
           {isEnd

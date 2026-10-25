@@ -132,3 +132,8 @@
 .waithint { position: relative; z-index: 1; background: var(--theme-tint, #fff); padding: 3cqw 4cqw; border-radius: 12px; box-shadow: 0 0 0 2px var(--theme, var(--h-blue)); }
 .welcome-ov .dpage.screen { background: linear-gradient(var(--page-bg) 40%, var(--theme-tint, var(--page-bg))); }
 .dpage.screen { background: linear-gradient(var(--page-bg) 40%, var(--theme-tint, var(--page-bg))); }
+
+/* アルバムの「もどる」 */
+.backbtn { position: fixed; z-index: 25; top: calc(6px + env(safe-area-inset-top)); left: 8px; min-width: 44px; min-height: 44px; padding: 0 14px; font-family: var(--f-note); font-size: 17px; color: var(--h-ink); background: rgba(255,255,255,.9); border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px; box-shadow: 0 0 0 2px var(--h-ink); }
+.backbtn:active { background: var(--h-blue); }
+.backgap { height: 52px; }
