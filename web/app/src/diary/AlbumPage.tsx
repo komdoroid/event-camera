@@ -2,8 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api, type Album, type AlbumPhoto, type Order, type Product } from '../api';
 import { getGuestId } from '../lib/guestId';
+import { coverStyle, pageColorStyle, themeStyle } from '../lib/kinds';
 import { copyFor } from './copy';
-import { Arrow, Book, Heart, Phone, Star, Sun, Wash } from './Doodles';
+import type { CSSProperties } from 'react';
+import { Arrow, Book, Confetti, Heart, Phone, Squiggle, Star, Sun, Wash } from './Doodles';
 import { LoadPhoto } from './LoadPhoto';
 import { formatDay, formatDot, formatTime, pageKind, shortOrder, yen } from './format';
 import { clampPage, countMine, loadPurchased, printPageCount, savePurchased, swipeDir, totalPages, visiblePages } from './paging';
@@ -15,14 +17,15 @@ type CopyT = ReturnType<typeof copyFor>;
 function Cover({ album, page, C }: { album: Album; page: Page; C: CopyT }) {
   const p = page.photos[0];
   return (
-    <section className="dpage cover">
-      <Wash color="blue" style={{ left: '-10cqw', top: '30cqw', width: '80cqw', height: '70cqw' }} />
-      <Wash color="pink" style={{ right: '-12cqw', bottom: '-8cqw', width: '70cqw', height: '60cqw' }} />
+    <section className="dpage cover" style={coverStyle(album.event.kind)}>
+      <Wash color="theme" style={{ left: '-10cqw', top: '30cqw', width: '80cqw', height: '70cqw' }} />
+      <Wash color="yellow" style={{ right: '-12cqw', bottom: '-8cqw', width: '70cqw', height: '60cqw' }} />
+      <Confetti className="cf" style={{ right: '6cqw', top: '6cqw', width: '28cqw' }} />
       <div className="note vol">{C.albumTitle.join('')} ・ {C.vol}{p ? ` ・ ${formatDot(p.takenAt)}` : ''}</div>
       <h1 style={{ fontSize: album.event.name.length > 12 ? '9cqw' : '12cqw' }}>{album.event.name}</h1>
       {p && <LoadPhoto src={p.url} mine={!!p.mine} tilt={2.5} tape ratio="5 / 4" />}
       <div className="note evn">{C.endStats(album.stats.guests, album.stats.photos)}</div>
-      <Heart style={{ right: '6cqw', top: '44cqw', width: '12cqw' }} />
+      <Heart style={{ right: '6cqw', top: '44cqw', width: '12cqw', '--df': 'var(--h-orange)' } as CSSProperties} />
     </section>
   );
 }
@@ -34,18 +37,20 @@ function Diary({ page, index, C }: { page: Page; index: number; C: CopyT }) {
   const first = photos[0];
   const memo = C.pageMemos[index % C.pageMemos.length];
   return (
-    <section className="dpage">
+    <section className="dpage tinted" style={pageColorStyle(index)}>
+      <Wash color="page" style={{ right: '-14cqw', bottom: '-10cqw', width: '70cqw', height: '55cqw' }} />
       <div className="dhead">
         <span>{formatDay(first.takenAt)}</span><span className="note" style={{ fontWeight: 400 }}>{C.weather}</span>
         <Sun /><span className="note time">{formatTime(first.takenAt)}</span>
       </div>
+      <Squiggle />
       <div className={`dbody ${kind === 'cover' ? 'full' : kind}`}>
         {photos.map((p, i) => (
-          <LoadPhoto key={p.id} src={p.url} mine={!!p.mine} tilt={TILTS[(index + i) % TILTS.length]} ratio={kind === 'grid' ? '1 / 1' : kind === 'full' ? '4 / 3' : '3 / 2'} tape={kind === 'full' && i === 0} />
+          <LoadPhoto key={p.id} src={p.url} mine={!!p.mine} tilt={TILTS[(index + i) % TILTS.length]} ratio={kind === 'grid' ? '1 / 1' : kind === 'full' ? '4 / 3' : '3 / 2'} tape={i === 0} />
         ))}
       </div>
       <div className="dlines"><p className="note">{memo}<br />{formatTime(first.takenAt)} ・ {C.attribution}</p></div>
-      <div className="dtail">{index % 2 ? <Arrow style={{ width: '14cqw' }} /> : <Star />}{index % 3 === 0 ? <Heart /> : <Sun style={{ width: '12cqw' }} />}</div>
+      <div className="dtail">{index % 4 === 1 ? <Confetti className="cf" style={{ width: '22cqw' }} /> : index % 2 ? <Arrow style={{ width: '14cqw' }} /> : <Star />}{index % 3 === 0 ? <Heart /> : <Sun style={{ width: '12cqw' }} />}</div>
     </section>
   );
 }
@@ -54,20 +59,23 @@ function End({ album, C, purchased, onBuy, onSave }: { album: Album; C: CopyT; p
   const mine = countMine(album.pages);
   const bought = purchased.length > 0;
   return (
-    <section className="dpage end">
-      <Wash color="pink" style={{ left: '10cqw', top: '10cqw', width: '80cqw', height: '60cqw' }} />
-      <Heart />
+    <section className="dpage end" style={themeStyle(album.event.kind)}>
+      <Wash color="yellow" style={{ left: '-10cqw', top: '4cqw', width: '70cqw', height: '55cqw' }} />
+      <Wash color="theme" style={{ right: '-12cqw', bottom: '-6cqw', width: '80cqw', height: '60cqw' }} />
+      <Confetti className="cf" style={{ left: '4cqw', top: '4cqw', width: '30cqw' }} />
+      <Confetti className="cf" style={{ right: '4cqw', top: '10cqw', width: '26cqw', transform: 'scaleX(-1)' }} />
+      <div className="trio"><Star style={{ '--df': 'var(--h-mint)', width: '12cqw' } as CSSProperties} /><Heart style={{ width: '17cqw' }} /><Star style={{ '--df': 'var(--h-purple)', width: '12cqw' } as CSSProperties} /></div>
       <div className="big">{C.endStats(album.stats.guests, album.stats.photos)}</div>
       {mine > 0 && <p className="note">{C.mineCount(mine)}</p>}
       {bought ? (
         <>
           <p className="paidtag">{C.purchased}</p>
-          {purchased.includes('digital') && <button type="button" className="hbtn2" onClick={onSave}>{C.savePhotos}</button>}
+          {purchased.includes('digital') && <button type="button" className="hbtn2 pri" onClick={onSave}>{C.savePhotos}</button>}
         </>
       ) : (
         <>
           <p>{C.endAsk}</p>
-          <button type="button" className="hbtn2" onClick={onBuy}>{C.endButton}</button>
+          <button type="button" className="hbtn2 pri" onClick={onBuy}>{C.endButton}</button>
         </>
       )}
     </section>
@@ -79,7 +87,7 @@ const PRICE_OVAL = (
 );
 const PRICES: Record<Product, number> = { digital: 500, print: 3000 }; // 表示用。確定額は注文の返り値
 
-function Buy({ eventId, C, pages, onDone, onBack }: { eventId: string; C: CopyT; pages: number; onDone: (o: Order) => void; onBack: () => void }) {
+function Buy({ eventId, kind, C, pages, onDone, onBack }: { eventId: string; kind: string; C: CopyT; pages: number; onDone: (o: Order) => void; onBack: () => void }) {
   const [busy, setBusy] = useState<Product | null>(null);
   const [err, setErr] = useState(false);
   async function buy(p: Product) {
@@ -87,7 +95,8 @@ function Buy({ eventId, C, pages, onDone, onBack }: { eventId: string; C: CopyT;
     try { onDone(await api.createOrder(eventId, getGuestId(), p)); } catch { setErr(true); setBusy(null); }
   }
   return (
-    <section className="dpage buy">
+    <section className="dpage buy" style={themeStyle(kind)}>
+      <Confetti className="cf" style={{ right: '4cqw', top: '4cqw', width: '28cqw' }} />
       <h2 className="dtitle">{C.buyTitle}</h2>
       {(['digital', 'print'] as Product[]).map((p) => (
         <div className="hcard" key={p}>
@@ -98,7 +107,7 @@ function Buy({ eventId, C, pages, onDone, onBack }: { eventId: string; C: CopyT;
             {C.products[p].features.map((f) => <li key={f}>{f}</li>)}
           </ul>
           {p === 'digital' ? <Phone className="vis" /> : <Book className="vis" />}
-          <button type="button" className="hbtn2" disabled={busy !== null} onClick={() => buy(p)}>{busy === p ? C.buying : C.buy}</button>
+          <button type="button" className={'hbtn2' + (p === 'digital' ? ' pri' : '')} disabled={busy !== null} onClick={() => buy(p)}>{busy === p ? C.buying : C.buy}</button>
         </div>
       ))}
       {err && <p className="errtxt" role="alert">{C.buyError}</p>}
@@ -125,8 +134,10 @@ function Done({ order, album, C, eventId, onBack }: { order: Order; album: Album
   }
   const ok = form.name.trim() && form.zip.trim() && form.address.trim();
   return (
-    <section className="dpage donep">
-      <Wash color="blue" style={{ left: '10cqw', top: '10cqw', width: '80cqw', height: '50cqw' }} />
+    <section className="dpage donep" style={themeStyle(album.event.kind)}>
+      <Wash color="theme" style={{ left: '10cqw', top: '10cqw', width: '80cqw', height: '50cqw' }} />
+      <Confetti className="cf" style={{ left: '4cqw', top: '4cqw', width: '30cqw' }} />
+      <Confetti className="cf" style={{ right: '4cqw', top: '8cqw', width: '26cqw', transform: 'scaleX(-1)' }} />
       <Star className="flow bob" style={{ width: '20cqw', position: 'static' }} />
       <h1 className="dtitle">{C.doneTitle}</h1>
       <p><b>{C.products[order.product].name}</b> ・ {yen(order.amount)}{order.orderId && <><br /><span className="note">注文番号 #{shortOrder(order.orderId)}</span></>}</p>
@@ -136,7 +147,7 @@ function Done({ order, album, C, eventId, onBack }: { order: Order; album: Album
           <div className="plist">
             {photos.map((p) => <a key={p.id} href={p.url} target="_blank" rel="noreferrer"><img src={p.url} alt="" loading="lazy" /></a>)}
           </div>
-          <button type="button" className="hbtn2" onClick={share}>{C.doneDigital.share}</button>
+          <button type="button" className="hbtn2 pri" onClick={share}>{C.doneDigital.share}</button>
           {msg && <p className="note" role="status">{msg}</p>}
         </>
       ) : sent ? (
@@ -147,7 +158,7 @@ function Done({ order, album, C, eventId, onBack }: { order: Order; album: Album
           <label>{C.donePrint.name}<input value={form.name} autoComplete="name" onChange={(e) => setForm({ ...form, name: e.target.value })} /></label>
           <label>{C.donePrint.zip}<input value={form.zip} inputMode="numeric" autoComplete="postal-code" onChange={(e) => setForm({ ...form, zip: e.target.value })} /></label>
           <label>{C.donePrint.address}<input value={form.address} autoComplete="street-address" onChange={(e) => setForm({ ...form, address: e.target.value })} /></label>
-          <button type="submit" className="hbtn2" disabled={!ok} style={{ justifySelf: 'center' }}>{C.donePrint.submit}</button>
+          <button type="submit" className="hbtn2 pri" disabled={!ok} style={{ justifySelf: 'center' }}>{C.donePrint.submit}</button>
         </form>
       )}
       <p className="note bn">{C.mockNote}</p>
@@ -195,7 +206,7 @@ export default function AlbumPage() {
         {state === 'loading' ? <p>…</p> : state === 'closed' ? (
           <><h1 className="dtitle">まだ現像前です</h1><p>現像されるまで、絵日記は開けません。</p><Link className="hbtn2" to={`/e/${eventId}`}>もどる</Link></>
         ) : (
-          <><p className="errtxt">{C.albumLoadError}</p><button className="hbtn2" onClick={() => setTick((t) => t + 1)}>{C.retry}</button></>
+          <><p className="errtxt">{C.albumLoadError}</p><button className="hbtn2 pri" onClick={() => setTick((t) => t + 1)}>{C.retry}</button></>
         )}
       </div></div>
     );
@@ -215,6 +226,7 @@ export default function AlbumPage() {
   return (
     <div
       className={`diary${view === 'album' ? ' paged' : ''}`}
+      style={themeStyle(album.event.kind)}
       onTouchStart={(e) => { touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }}
       onTouchEnd={onTouchEnd}
     >
@@ -226,11 +238,11 @@ export default function AlbumPage() {
           <nav className="pager" aria-label="ページ">
             <button type="button" className="hbtn2" onClick={() => go(-1)} disabled={cur === 0}>{C.prev}</button>
             <span className="pn" aria-live="polite">{cur + 1} / {total}</span>
-            <button type="button" className="hbtn2" onClick={() => go(1)} disabled={cur === total - 1}>{C.next}</button>
+            <button type="button" className="hbtn2 pri" onClick={() => go(1)} disabled={cur === total - 1}>{C.next}</button>
           </nav>
         </>
       )}
-      {view === 'buy' && <Buy eventId={eventId} C={C} pages={printPageCount(album.pages)} onBack={() => setView('album')} onDone={(o) => { savePurchased(eventId, o.product); setPurchased(loadPurchased(eventId)); setOrder(o); setView('done'); }} />}
+      {view === 'buy' && <Buy eventId={eventId} kind={album.event.kind} C={C} pages={printPageCount(album.pages)} onBack={() => setView('album')} onDone={(o) => { savePurchased(eventId, o.product); setPurchased(loadPurchased(eventId)); setOrder(o); setView('done'); }} />}
       {view === 'done' && order && <Done order={order} album={album} C={C} eventId={eventId} onBack={() => setView('album')} />}
     </div>
   );

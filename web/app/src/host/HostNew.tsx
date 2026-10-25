@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api, type EventKind } from '../api';
-import { DEFAULT_KIND, KINDS, eventNameOrExample, kindMeta } from '../lib/kinds';
+import { DEFAULT_KIND, KINDS, eventNameOrExample, kindMeta, themeStyle } from '../lib/kinds';
 import { KindIcon } from '../lib/KindIcon';
 import { upsertMyEvent } from './myEvents';
 import { saveHostToken } from './hostLib';
@@ -36,14 +36,14 @@ export default function HostNew() {
   }
 
   return (
-    <div className="host"><form className="host-in" onSubmit={submit}>
+    <div className="host" style={themeStyle(kind)}><form className="host-in" onSubmit={submit}>
       <h1>イベントをつくる</h1>
       <p>作ると、ゲストに配るQRコードが表示されます。</p>
       <fieldset className="kinds">
         <legend>どんなイベント？</legend>
         <div className="kindgrid">
           {KINDS.map((k) => (
-            <button type="button" key={k.kind} className={'kindtile' + (k.kind === kind ? ' on' : '')} aria-pressed={k.kind === kind} onClick={() => setKind(k.kind)}>
+            <button type="button" key={k.kind} className={'kindtile' + (k.kind === kind ? ' on' : '')} aria-pressed={k.kind === kind} style={themeStyle(k.kind)} onClick={() => setKind(k.kind)}>
               <KindIcon kind={k.kind} size={38} />
               <span>{k.label}</span>
             </button>

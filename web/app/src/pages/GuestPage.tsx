@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api, type EventInfo } from '../api';
 import { loadHostToken } from '../host/hostLib';
 import { getGuestId } from '../lib/guestId';
+import { themeStyle } from '../lib/kinds';
 import CameraScreen from '../camera/CameraScreen';
 import { AnnounceScreen, WaitScreen } from '../diary/Screens';
 
@@ -52,9 +53,9 @@ export default function GuestPage() {
   const back = loadHostToken(eventId) ? <Link className="lbl hostback fixed" to={`/host/${eventId}`}>管理画面へ</Link> : null;
   // 現像済み: 「絵日記がとどきました」
   if (event.status === 'published')
-    return <>{back}<AnnounceScreen eventName={event.name} guests={event.stats.guests} onOpen={() => nav(`/e/${eventId}/album`)} /></>;
+    return <>{back}<AnnounceScreen eventName={event.name} guests={event.stats.guests} kind={event.kind} onOpen={() => nav(`/e/${eventId}/album`)} /></>;
   // 撮り切り: 現像待ち（現像されたら自動で切りかわる）
   if (finished || remaining <= 0) return <>{back}<WaitScreen shotLimit={event.shotLimit} eventName={event.name} kind={event.kind} /></>;
 
-  return <CameraScreen welcome={taken === 0} event={event} guestId={getGuestId()} initialRemaining={remaining} onFinished={() => setFinished(true)} onClosed={() => setLatest({ ...event, status: 'published' })} />;
+  return <div style={{ display: 'contents', ...themeStyle(event.kind) }}><CameraScreen welcome={taken === 0} event={event} guestId={getGuestId()} initialRemaining={remaining} onFinished={() => setFinished(true)} onClosed={() => setLatest({ ...event, status: 'published' })} /></div>;
 }

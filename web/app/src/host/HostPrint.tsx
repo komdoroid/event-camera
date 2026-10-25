@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import QRCode from 'qrcode';
 import { api, type EventInfo } from '../api';
 import { KindIcon } from '../lib/KindIcon';
+import { themeStyle } from '../lib/kinds';
 import { guestUrl } from './hostLib';
 import './host.css';
 
@@ -16,7 +17,7 @@ export default function HostPrint() {
   useEffect(() => { QRCode.toDataURL(guestUrl(eventId), { margin: 1, width: 640 }).then(setQr).catch(() => {}); }, [eventId]);
 
   return (
-    <div className="hprint">
+    <div className="hprint" style={themeStyle(ev?.kind)}>
       <div className="hprint-bar noprint">
         <Link className="hbtn" to={`/host/${eventId}`}>もどる</Link>
         <button type="button" className="hbtn ghost" disabled={!ev || !qr} onClick={() => window.print()}>印刷する</button>
@@ -26,7 +27,7 @@ export default function HostPrint() {
       {ev && (
         <div className="pcards">
           {[0, 1, 2, 3].map((n) => (
-            <div className="pcard" key={n}>
+            <div className="pcard" key={n} style={themeStyle(ev.kind)}>
               <KindIcon kind={ev.kind} size={36} />
               <h1>{ev.name}</h1>
               {ev.message && <p className="pnote">{ev.message}</p>}

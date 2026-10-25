@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import QRCode from 'qrcode';
 import { api, type EventInfo, type HostPhoto } from '../api';
 import { KindIcon } from '../lib/KindIcon';
+import { themeStyle } from '../lib/kinds';
 import { hostStage, notifyText, type Stage } from './stage';
 import { upsertMyEvent } from './myEvents';
 import { adminLink, buildZip, guestUrl, loadHostToken, parseHashToken, saveBlob, saveHostToken, withToken } from './hostLib';
@@ -121,7 +122,7 @@ export default function HostEvent() {
     </div>
   );
   return (
-    <div className="host"><div className="host-in">
+    <div className="host" style={themeStyle(ev?.kind)}><div className="host-in">
       <h1 className="evtitle">{ev && <KindIcon kind={ev.kind} size={34} />}<span>{ev?.name ?? '読み込み中…'}</span></h1>
       {loadErr && <div className="err" role="alert">状況を取得できません。通信を確認してください。</div>}
 
@@ -138,7 +139,7 @@ export default function HostEvent() {
 
       {stage === 'shooting' && ev && (
         <section className="card stage">
-          <span className="chip">撮影中</span>
+          <span className="chip shooting">撮影中</span>
           <h2>みんなが撮っています</h2>
           <div className="stats">
             <div><b>{ev.stats.photos}</b><span>撮影枚数</span></div>

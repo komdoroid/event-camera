@@ -9,7 +9,7 @@
 .host label { display: grid; gap: 6px; font-size: 13px; color: var(--page-mute); }
 .host input { font: inherit; font-size: 16px; color: var(--page-ink); padding: 12px; border: var(--line-w) solid var(--page-line); border-radius: var(--radius); background: var(--page-bg); width: 100%; }
 .hbtn { min-height: 44px; -webkit-tap-highlight-color: transparent; transition: transform .08s; display: inline-flex; align-items: center; justify-content: center; padding: 13px 18px; border-radius: var(--radius); border: var(--line-w) solid var(--page-line); border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px; background: var(--btn-bg); color: var(--btn-ink); font-size: 15px; font-weight: 600; text-decoration: none; cursor: pointer; font-family: inherit; }
-.hbtn.ghost { background: var(--h-pink); }
+.hbtn.ghost { background: var(--theme, var(--h-pink)); font-weight: 700; border-width: 2.5px; box-shadow: 2px 3px 0 var(--h-ink); }
 .hbtn:active:not(:disabled) { background: var(--btn-active); }
 .hbtn:disabled { opacity: .5; cursor: default; }
 .hrow { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -22,7 +22,7 @@
 .thumbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
 .thumbs img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: calc(var(--radius) / 2); background: var(--page-soft); display: block; }
 .bar { height: 10px; border: var(--line-w) solid var(--page-line); border-radius: 999px; overflow: hidden; }
-.bar i { display: block; height: 100%; background: var(--h-blue); }
+.bar i { display: block; height: 100%; background: var(--theme, var(--h-blue)); }
 .err { color: var(--danger); font-size: 14px; }
 .overlay { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 20px; background: rgba(0,0,0,.45); }
 .overlay.full { background: var(--page-bg); }
@@ -38,14 +38,16 @@
 .htitle { font-weight: 600; font-size: 17px; }
 .hback, .hback-sp { width: 44px; height: 44px; flex: none; }
 .hback { display: grid; place-items: center; border-radius: 50%; color: var(--page-ink); }
-.hback:active { background: var(--h-blue); }
+.hback:active { background: var(--h-yellow); }
 .hmain { flex: 1 1 0; min-height: 0; position: relative; overflow: hidden; }
 .hpage { height: 100%; animation: hin .22s ease-out; }
 @keyframes hin { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
 .htabs { flex: none; display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--h-line); background: var(--page-bg); padding-bottom: env(safe-area-inset-bottom); z-index: 10; }
 .tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 56px; font-size: 11px; color: var(--page-mute); text-decoration: none; transition: transform .08s; }
 .tab.on { color: var(--page-ink); font-weight: 600; }
-.tab.on svg { color: var(--h-ink); filter: drop-shadow(0 6px 0 var(--h-blue)); }
+.tab svg { box-sizing: content-box; padding: 3px 14px; width: 24px; border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px; }
+.tab.on svg { color: var(--h-ink); background: var(--tabc, var(--h-yellow)); }
+.tab:nth-child(2) { --tabc: var(--h-mint); }
 .tab:active { transform: scale(.94); }
 .hbtn:active:not(:disabled) { transform: scale(.97); }
 @media (prefers-reduced-motion: reduce) { .hpage { animation: none; } .hbtn, .tab, .evcard { transition: none; } }
@@ -60,7 +62,8 @@
 .evmeta { display: flex; gap: 10px; align-items: center; font-size: 13px; color: var(--page-mute); }
 .evstats { font-size: 14px; }
 .evstats.small { font-size: 12px; color: var(--page-mute); }
-.chip { padding: 1px 10px; border-radius: 999px; border: 1.5px solid var(--page-line); font-size: 12px; color: var(--page-ink); background: var(--h-blue); }
+.chip { padding: 1px 10px; border-radius: 999px; border: 1.5px solid var(--page-line); font-size: 12px; color: var(--page-ink); background: var(--h-yellow); }
+.chip.shooting { background: var(--h-mint); }
 .chip.published { background: var(--h-pink); }
 .evdel { flex: none; width: 48px; min-height: 48px; display: grid; place-items: center; color: var(--page-mute); }
 .evdel:active { background: var(--page-soft); }
@@ -71,7 +74,7 @@
 .empty h1 { font-size: 22px; }
 .install h2 { font-size: 16px; }
 .hbtn.shoot { display: block; text-align: center; margin: 4px 0 14px; }
-.toast { position: sticky; top: 8px; z-index: 5; padding: 10px 14px; background: #a6d4e4; color: #3d3c48; border-radius: 10px; font-size: 13px; text-align: center; }
+.toast { position: sticky; top: 8px; z-index: 5; padding: 10px 14px; background: var(--h-yellow); color: #3d3c48; border-radius: 10px; font-size: 13px; text-align: center; }
 
 .linkarea { font: inherit; font-size: 16px; color: var(--page-ink); padding: 12px; border: var(--line-w) solid var(--page-line); border-radius: var(--radius); background: var(--page-bg); width: 100%; box-sizing: border-box; resize: vertical; word-break: break-all; }
 .hbtn.addlink { width: 100%; margin: 12px 0 8px; }
@@ -83,7 +86,8 @@
 .kindgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .kindtile { display: grid; justify-items: center; align-content: center; gap: 4px; min-height: 84px; padding: 8px 4px; border: var(--line-w) dashed var(--page-line); border-radius: 16px 6px 14px 8px; background: var(--page-bg); color: var(--page-ink); font-family: inherit; font-size: 12px; line-height: 1.3; text-align: center; transition: transform .08s; }
 .kindtile:active { transform: scale(.96); }
-.kindtile.on { border-style: solid; background: var(--h-blue); font-weight: 600; }
+.kindtile { border-color: var(--theme); }
+.kindtile.on { border-style: solid; border-color: var(--page-line); background: var(--theme); font-weight: 600; box-shadow: 2px 3px 0 var(--page-line); }
 .host .hint { font-size: 12px; color: var(--page-mute); }
 .host .counter { text-align: right; }
 .host textarea.linkarea { word-break: normal; }
@@ -112,6 +116,9 @@
 .samplerow { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
 .chip.sample { padding: 6px 14px; font-size: 14px; text-decoration: none; background: var(--page-bg); }
 .chip.sample:active { background: var(--h-blue); }
+.chip.sample:nth-child(3n+1) { background: var(--h-yellow-t); border-color: var(--h-yellow); }
+.chip.sample:nth-child(3n+2) { background: var(--h-mint-t); border-color: var(--h-mint); }
+.chip.sample:nth-child(3n) { background: var(--h-pink-t); border-color: var(--h-pink); }
 
 /* はじめの紹介 */
 .intro { position: fixed; inset: 0; z-index: 80; display: flex; flex-direction: column; background: var(--page-bg); color: var(--page-ink); font-family: var(--f-klee); padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
@@ -129,7 +136,7 @@
 .introbot .hbtn { width: 100%; max-width: 320px; }
 .dots { display: flex; gap: 8px; }
 .dots i { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--page-line); }
-.dots i.on { background: var(--h-pink); }
+.dots i.on { background: var(--theme, var(--h-pink)); border-color: var(--page-line); }
 
 /* QRカードの印刷 */
 .hprint { position: fixed; inset: 0; overflow-y: auto; background: var(--page-bg); color: var(--page-ink); font-family: var(--f-klee); padding: 14px 16px 32px; display: grid; gap: 14px; align-content: start; justify-items: center; }
@@ -142,7 +149,7 @@
 .pcard img { width: 55%; image-rendering: pixelated; margin-top: auto; }
 .pcard ol { margin: 0; padding: 0; list-style: none; counter-reset: s; font-family: var(--f-note); font-size: 15px; line-height: 1.7; }
 .pcard li { counter-increment: s; }
-.pcard li::before { content: counter(s) ". "; color: #d98f86; }
+.pcard li::before { content: counter(s); display: inline-block; width: 1.5em; text-align: center; color: var(--page-ink); font-weight: 700; background: var(--theme); border-radius: 999px; margin-right: 8px; }
 @media print {
   @page { size: A4; margin: 0; }
   html, body, #root { height: auto !important; overflow: visible !important; background: #fff !important; }
@@ -150,9 +157,71 @@
   .hprint { position: static; display: block; padding: 0; overflow: visible; }
   .hprint > * { max-width: none; }
   .pcards { width: 210mm; height: 297mm; grid-template-columns: 105mm 105mm; grid-template-rows: 148mm 148mm; gap: 0; break-inside: avoid; }
-  .pcard { width: 105mm; height: 148mm; aspect-ratio: auto; border: 0.3mm dashed #aaa; border-radius: 0; padding: 8mm 9mm; gap: 3mm; }
+  .pcard { width: 105mm; height: 148mm; aspect-ratio: auto; border: 1mm dashed var(--theme, #aaa); border-radius: 0; padding: 8mm 9mm; gap: 3mm; }
   .pcard h1 { font-size: 18pt; }
   .pnote { font-size: 10pt; }
   .pcard img { width: 52mm; }
   .pcard ol { font-size: 12pt; }
 }
+
+/* ---- T24: クレヨン箱の配色 ----
+   --theme / --theme-tint は画面のルートに lib/kinds.ts の themeStyle() が入れる。無ければ水色・ピンクにもどる */
+.htop { background: linear-gradient(90deg, var(--h-yellow), var(--h-mint), var(--h-blue), var(--h-purple), var(--h-pink), var(--h-orange)) bottom / 100% 4px no-repeat, var(--page-bg); border-bottom: 0; }
+.htabs { border-top: 2px solid var(--h-line); }
+.host input:focus-visible, .host textarea:focus-visible { outline: none; border-color: var(--theme, var(--h-blue)); box-shadow: 0 0 0 3px var(--theme-tint, var(--h-blue-t)); }
+.hbtn:active:not(:disabled).ghost { filter: brightness(.94); }
+.hbtn.ghost:active:not(:disabled) { background: var(--theme, var(--h-pink)); }
+
+.host h1 { background: none; }
+.evtitle span { background: linear-gradient(transparent 62%, var(--theme, var(--h-blue)) 62%); }
+.evtitle > svg { box-sizing: content-box; padding: 6px; border-radius: 50%; background: var(--theme-tint, var(--h-blue-t)); }
+
+.host .card h2 { justify-self: start; background: linear-gradient(transparent 60%, var(--hl, var(--h-yellow)) 60%); padding: 0 4px; margin: 0 -4px; }
+.host-in > section.card:nth-of-type(4n+2) { --hl: var(--h-mint); }
+.host-in > section.card:nth-of-type(4n+3) { --hl: var(--h-pink); }
+.host-in > section.card:nth-of-type(4n) { --hl: var(--h-purple); }
+.host .card.stage { background: transparent; --hl: var(--theme, var(--h-blue)); }
+.host .card.stage::before { border-color: var(--page-line); background: var(--theme-tint, #fff); }
+.host .card.stage .hbtn:not(.ghost) { background: #fff; }
+.host .card.stage .hbtn.ghost { background: var(--theme, var(--h-pink)); }
+.stage .chip { background: #fff; }
+.stage .chip.shooting { background: var(--h-mint); }
+.stage .chip.published { background: var(--h-pink); }
+
+.stats > div { background: var(--h-yellow-t); border-radius: 14px 6px 12px 8px; padding: 8px 4px; }
+.stats > div:nth-child(2) { background: var(--h-mint-t); }
+.stats > div:nth-child(3) { background: var(--h-pink-t); }
+.stats b { background: linear-gradient(transparent 62%, var(--h-yellow) 62%); display: table; margin: 0 auto 2px; padding: 0 8px; }
+.stats > div:nth-child(2) b { background: linear-gradient(transparent 62%, var(--h-mint) 62%); }
+.stats > div:nth-child(3) b { background: linear-gradient(transparent 62%, var(--h-pink) 62%); }
+.urlbox { background: var(--theme-tint, var(--page-soft)); }
+.thumbs img:nth-child(4n+1) { box-shadow: 0 0 0 2px var(--h-yellow); }
+.thumbs img:nth-child(4n+2) { box-shadow: 0 0 0 2px var(--h-mint); }
+.thumbs img:nth-child(4n+3) { box-shadow: 0 0 0 2px var(--h-pink); }
+.thumbs img:nth-child(4n) { box-shadow: 0 0 0 2px var(--h-purple); }
+.sales { border-top-color: var(--h-orange); }
+.dialog { box-shadow: 4px 5px 0 var(--theme, var(--h-yellow)); }
+.overlay.full { background: var(--theme-tint, var(--page-bg)); }
+
+/* マイイベント: 表紙の枠と影をテーマ色に */
+.evcard { box-shadow: 3px 4px 0 var(--theme, var(--h-blue)); }
+.evcover { border: 3px solid var(--theme, var(--h-blue)); background: var(--theme-tint, var(--page-soft)); }
+.empty { background: radial-gradient(circle at 50% 18%, var(--h-yellow-t), transparent 60%); }
+.empty h1 { text-decoration: underline var(--h-yellow); text-decoration-thickness: .26em; text-underline-offset: -.04em; text-decoration-skip-ink: none; }
+.host .samples h2 { background: linear-gradient(transparent 60%, var(--h-purple) 60%); padding: 0 4px; }
+.install.card { background: transparent; }
+.install.card::before { border-color: var(--h-mint); background: var(--h-mint-t); }
+
+/* はじめの紹介: カードごとに色が変わる */
+.intro { background: linear-gradient(var(--page-bg) 55%, var(--theme-tint, var(--page-bg))); transition: background .3s; }
+.introicons { padding: 18px 22px; border-radius: 60% 40% 55% 45% / 45% 55% 45% 55%; background: var(--theme-tint, transparent); border: 2px dashed var(--theme, var(--page-line)); min-width: 220px; }
+.introcard h1 { text-decoration: underline var(--theme, var(--h-yellow)); text-decoration-thickness: .26em; text-underline-offset: -.04em; text-decoration-skip-ink: none; }
+.introskip { text-decoration: underline; text-decoration-color: var(--theme, var(--h-yellow)); text-decoration-thickness: 3px; text-underline-offset: 4px; }
+
+/* QRカード */
+.pcard { background: var(--theme-tint, #fff); border-color: var(--theme, var(--page-line)); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.pcard img { background: #fff; padding: 2.5%; border-radius: 12px; box-sizing: border-box; border: 2px solid var(--theme, var(--page-line)); }
+.pcard h1 { text-decoration: underline var(--theme, var(--h-blue)); text-decoration-thickness: .26em; text-underline-offset: -.04em; text-decoration-skip-ink: none; }
+.pcard > svg { box-sizing: content-box; padding: 6px; border-radius: 50%; background: #fff; }
+@media screen { .pcard { border-width: 3px; } }
+@media print { .pcard img { width: 52mm; } .pcard { border-width: 1mm; } }

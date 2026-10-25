@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Book, Envelope, Phone, Star } from '../diary/Doodles';
 import { KindIcon } from '../lib/KindIcon';
 import { markIntroSeen } from '../lib/intro';
+import { themeStyle } from '../lib/kinds';
 import { SAMPLE_DIARIES, sampleAlbumPath } from '../lib/samples';
 import type { EventKind } from '../api';
 import './host.css';
@@ -21,6 +22,8 @@ export function SampleLinks({ title = 'サンプルの絵日記を見る', onGo 
 
 const row = (kinds: EventKind[]) => <div className="introicons">{kinds.map((k) => <KindIcon key={k} kind={k} size={46} />)}</div>;
 
+const THEME_KINDS: EventKind[] = ['birthday', 'reunion', 'wedding']; // 黄・ミント・ピンク
+
 const CARDS = [
   { title: 'イベントをつくる', text: '誕生日、飲み会、同窓会、旅行、社内イベント…。名前をつけて、QRコードを配るだけです。', art: row(['birthday', 'party', 'reunion', 'trip', 'company']) },
   { title: 'みんなが撮る', text: 'ゲストはQRを読むだけ。アプリも登録もいりません。現像するまで、だれも写真を見られません。', art: <div className="introicons"><KindIcon kind="trip" size={40} /><Phone style={{ width: 54, position: 'static' }} /><KindIcon kind="birthday" size={40} /></div> },
@@ -36,11 +39,11 @@ export default function Intro({ onClose }: { onClose: () => void }) {
   const done = () => { markIntroSeen(); onClose(); };
   const go = (n: number) => ref.current?.scrollTo({ left: n * ref.current.clientWidth, behavior: 'smooth' });
   return (
-    <div className="intro" role="dialog" aria-modal="true" aria-label="絵日記カメラのしくみ">
+    <div className="intro" style={themeStyle(THEME_KINDS[i])} role="dialog" aria-modal="true" aria-label="絵日記カメラのしくみ">
       <div className="introtop">{<button type="button" className="introskip" onClick={done}>スキップ</button>}</div>
       <div className="introtrack" ref={ref} onScroll={(e) => setI(Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth))}>
         {CARDS.map((c, n) => (
-          <section className="introcard" key={n} aria-label={`${n + 1} / ${CARDS.length}`}>
+          <section className="introcard" key={n} style={themeStyle(THEME_KINDS[n])} aria-label={`${n + 1} / ${CARDS.length}`}>
             {c.art}
             <h1>{c.title}</h1>
             <p>{c.text}</p>

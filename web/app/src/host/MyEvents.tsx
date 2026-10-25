@@ -5,6 +5,7 @@ import { Book, Heart } from '../diary/Doodles';
 import { formatDot } from '../diary/format';
 import { detectPlatform, dismissInstall, installHint, isDismissed, isInstallShown, isStandalone, markInstallShown } from '../lib/install';
 import { KindIcon } from '../lib/KindIcon';
+import { themeStyle } from '../lib/kinds';
 import { loadHostToken } from './hostLib';
 import { shootingFirst } from './stage';
 import { SampleLinks } from './Intro';
@@ -63,7 +64,7 @@ function EventCard({ ev, onRemove, onInfo }: { ev: MyEvent; onRemove: () => void
     return () => { alive = false; };
   }, [ev.id, ev.name]);
   return (
-    <li className="evcard">
+    <li className="evcard" style={themeStyle(info?.kind)}>
       <button type="button" className="evmain" onClick={() => nav(`/host/${ev.id}`)}>
         <Cover info={info} token={loadHostToken(ev.id)} />
         <span className="evtext">

@@ -34,9 +34,6 @@ button { font: inherit; color: inherit; background: transparent; border: 0; curs
 .cam-bot { flex: none; display: grid; gap: 14px; padding: 14px 16px 16px; }
 .wheel { position: relative; height: 44px; border: 1px solid currentColor; overflow: hidden; touch-action: none; cursor: grab; }
 .wheel::before { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 9px); background-position: var(--wx, 0px) 0; opacity: .4; }
-.wheel .fill { position: absolute; top: 0; bottom: 0; left: 0; width: var(--wp, 0%); background: var(--accent); opacity: .85; }
-.wheel .txt { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
-.wheel .txt span { background: var(--night); padding: 3px 10px; font-family: var(--f-label); font-size: 11px; letter-spacing: .2em; }
 .cam[data-wound="1"] .wheel { opacity: .5; cursor: default; }
 .wheel.nudge { animation: nudge .35s; }
 @keyframes nudge { 30% { transform: translateX(-6px); } 60% { transform: translateX(6px); } }

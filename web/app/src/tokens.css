@@ -18,6 +18,17 @@
   --h-ink: #3d3c48;
   --h-blue: #a6d4e4;
   --h-pink: #f6c0ba;
+  --h-yellow: #ffd96a;
+  --h-mint: #9fe0c4;
+  --h-orange: #ffb27a;
+  --h-purple: #c7b3f0;
+  /* 背景に使う薄い色 */
+  --h-blue-t: #e6f3f8;
+  --h-pink-t: #fdeae7;
+  --h-yellow-t: #fff4cc;
+  --h-mint-t: #e0f6ec;
+  --h-orange-t: #ffeadb;
+  --h-purple-t: #efe9fb;
   --h-line: #c9c8d0;
   --f-klee: "Klee One", "Zen Kurenaido", "Hiragino Mincho ProN", "Yu Mincho", serif;
   --f-note: "Yomogi", "Klee One", "Hiragino Maru Gothic ProN", cursive;
@@ -35,3 +46,6 @@
   --btn-active: var(--h-blue);
   --danger: #c0504d;
 }
+
+/* イベントの種類ごとのテーマ色は lib/kinds.ts の themeStyle() が --theme / --theme-tint に入れる。
+   未指定の画面は水色（--theme）とピンク（主ボタン）にもどる */
