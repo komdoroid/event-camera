@@ -7,6 +7,8 @@ import { useAlive } from '../lib/useAlive';
 import { copyFor } from '../diary/copy';
 import { Star, Sun, Wash } from '../diary/Doodles';
 import PermissionHelp from './PermissionHelp';
+import { DIAL_R, dialRidges } from './dial';
+import './camera.css';
 import { captureFrame } from './capture';
 import { refund, shoot, startFilm, wind, WIND_NEED, type Film } from './film';
 import { uploadQueue, type FailReason } from './uploader';
@@ -42,6 +44,37 @@ function Roll({ value }: { value: number }) {
   );
 }
 
+/** 遠近法の円筒。うね x = R*sin(θ+phase)。中央は幅広く明るく、端は詰まって暗い */
+function DialSvg({ phase }: { phase: number }) {
+  const R = DIAL_R, W = 2 * R, H = 76;
+  return (
+    <svg className="dsvg" data-phase={phase.toFixed(3)} viewBox={`${-R} 0 ${W} ${H}`} preserveAspectRatio="none" width="100%" height="100%">
+      <defs>
+        <linearGradient id="dshade" x1="0" x2="1" y1="0" y2="0">
+          <stop offset="0" stopColor="#000" stopOpacity=".95" /><stop offset=".25" stopColor="#000" stopOpacity=".5" />
+          <stop offset=".5" stopColor="#fff" stopOpacity=".22" /><stop offset=".75" stopColor="#000" stopOpacity=".5" />
+          <stop offset="1" stopColor="#000" stopOpacity=".95" />
+        </linearGradient>
+        <linearGradient id="dvert" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stopColor="#000" stopOpacity=".4" /><stop offset=".25" stopColor="#000" stopOpacity="0" />
+          <stop offset=".75" stopColor="#000" stopOpacity="0" /><stop offset="1" stopColor="#000" stopOpacity=".4" />
+        </linearGradient>
+      </defs>
+      <rect x={-R} y="0" width={W} height={H} fill="#34363d" />
+      <g className="dg">
+        {dialRidges(phase).map((r, i) => (
+          <g key={i}>
+            <line x1={r.x} x2={r.x} y1="0" y2={H} stroke="#0b0c0f" strokeWidth={(3.4 * r.w).toFixed(2)} />
+            <line x1={r.x + 2.2 * r.w} x2={r.x + 2.2 * r.w} y1="0" y2={H} stroke="#c3c8d2" strokeOpacity={(0.85 * r.c).toFixed(2)} strokeWidth={(0.9 * r.w).toFixed(2)} />
+          </g>
+        ))}
+      </g>
+      <rect x={-R} y="0" width={W} height={H} fill="url(#dshade)" />
+      <rect x={-R} y="0" width={W} height={H} fill="url(#dvert)" />
+    </svg>
+  );
+}
+
 export default function CameraScreen({ event, guestId, initialRemaining, onFinished, onClosed, welcome = false }: Props) {
   const [film, setFilm] = useState<Film>(() => startFilm(initialRemaining));
   const filmRef = useRef(film);
@@ -57,6 +90,7 @@ export default function CameraScreen({ event, guestId, initialRemaining, onFinis
   const streamRef = useRef<MediaStream | null>(null);
   const flashRef = useRef<HTMLDivElement>(null);
   const wheelRef = useRef<HTMLDivElement>(null);
+  const dialRef = useRef<HTMLDivElement>(null);
   const finishTimer = useRef(0);
   const toastTimer = useRef(0);
   const alive = useAlive();
@@ -126,7 +160,6 @@ export default function CameraScreen({ event, guestId, initialRemaining, onFinis
     const video = videoRef.current!;
     const jpeg = captureFrame(video); // クリック時点のフレームを取り込む
     update(next);
-    setWx(0);
     flash();
     jpeg
       .then((blob) =>
@@ -150,7 +183,18 @@ export default function CameraScreen({ event, guestId, initialRemaining, onFinis
 
   // 巻き上げ（横スワイプ）
   const drag = useRef<{ x: number } | null>(null);
-  const advance = (dx: number) => { update(wind(filmRef.current, dx)); setWx((x) => x + dx); };
+  const advance = (dx: number) => {
+    const cur = filmRef.current;
+    if (cur.wound || cur.remaining <= 0) return; // 巻き切ったらそれ以上回らない
+    const next = wind(cur, dx);
+    update(next);
+    setWx((x) => x + dx);
+    if (next.wound) {
+      navigator.vibrate?.(15);
+      const d = dialRef.current;
+      if (d && !reduced()) { d.classList.remove('clunk'); void d.offsetWidth; d.classList.add('clunk'); }
+    }
+  };
   const wheelHandlers = {
     onPointerDown(e: React.PointerEvent) {
       const f = filmRef.current;
@@ -177,7 +221,7 @@ export default function CameraScreen({ event, guestId, initialRemaining, onFinis
   const done = film.remaining === 0;
 
   return (
-    <section className="cam" data-wound={film.wound ? '1' : '0'}>
+    <section className="cam" data-wound={film.wound ? '1' : '0'} data-end={done ? '1' : '0'}>
       <div className="cam-top"><span className="lbl evname">{event.name}</span>{pending > 0 && <span className="lbl sending">送信中 {pending} 枚</span>}{loadHostToken(event.id) && <Link className="lbl hostback" to={`/host/${event.id}`}>管理画面へ</Link>}</div>
       <div className="cam-mid">
         <div className="viewf">
@@ -203,11 +247,15 @@ export default function CameraScreen({ event, guestId, initialRemaining, onFinis
         <div
           className="wheel" ref={wheelRef} role="slider" tabIndex={0} aria-label="巻き上げ。左右にスワイプ"
           aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(pct)}
-          style={{ ['--wp' as string]: pct + '%', ['--wx' as string]: wx + 'px' }}
+          style={{ ['--wp' as string]: pct + '%', }}
           {...wheelHandlers}
         >
-          <div className="fill" />
-          <div className="txt"><span>{film.wound ? 'READY' : done ? 'END' : '← 巻き上げ →'}</span></div>
+          <div className="wtrack">
+            <span className="arrow" aria-hidden="true">›</span>
+            <span className="wlabel"><i className="lamp" />{film.wound ? 'READY' : done ? 'END' : '← 巻き上げ →'}</span>
+            <div className="wbar"><i /></div>
+          </div>
+          <div className="dial" ref={dialRef} aria-hidden="true"><DialSvg phase={wx / DIAL_R} /></div>
         </div>
         <div className="cam-row">
           <div>
