@@ -10,6 +10,8 @@ const UPLOAD_TTL_SEC = 600;
 const DEFAULT_SHOT_LIMIT = 27;
 const PRODUCTS: Record<string, number> = { digital: 500, print: 3000 };
 const MAX_SHOT_LIMIT = 200;
+const KINDS = ["birthday", "party", "reunion", "trip", "company", "wedding", "other"];
+const MAX_MESSAGE = 140;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 class HttpError extends Error {
@@ -66,6 +68,8 @@ interface EventRow {
   host_token: string;
   status: string;
   published_at: string | null;
+  kind: string;
+  message: string | null;
 }
 
 async function getEvent(env: Env, id: string): Promise<EventRow> {
@@ -136,11 +140,23 @@ async function route(req: Request, env: Env): Promise<Response> {
         throw new HttpError(400, `shotLimit must be an integer 1-${MAX_SHOT_LIMIT}`);
       shotLimit = b.shotLimit as number;
     }
+    let kind = "other";
+    if (b.kind !== undefined) {
+      if (typeof b.kind !== "string" || !KINDS.includes(b.kind)) throw new HttpError(400, `kind must be one of ${KINDS.join(", ")}`);
+      kind = b.kind;
+    }
+    let message: string | null = null;
+    if (b.message !== undefined && b.message !== null) {
+      if (typeof b.message !== "string") throw new HttpError(400, "message must be a string");
+      const t = b.message.trim();
+      if ([...t].length > MAX_MESSAGE) throw new HttpError(400, `message must be at most ${MAX_MESSAGE} chars`);
+      message = t === "" ? null : t;
+    }
     const id = crypto.randomUUID().slice(0, 8);
     const hostToken = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
-    await env.DB.prepare("INSERT INTO events (id, name, shot_limit, host_token, status, created_at) VALUES (?,?,?,?, 'shooting', ?)")
-      .bind(id, name, shotLimit, hostToken, nowIso()).run();
-    return json({ id, hostToken, name, shotLimit }, 201);
+    await env.DB.prepare("INSERT INTO events (id, name, shot_limit, host_token, status, created_at, kind, message) VALUES (?,?,?,?, 'shooting', ?, ?, ?)")
+      .bind(id, name, shotLimit, hostToken, nowIso(), kind, message).run();
+    return json({ id, hostToken, name, shotLimit, kind, message }, 201);
   }
 
   if (p[0] === "events" && p[1]) {
@@ -150,7 +166,17 @@ async function route(req: Request, env: Env): Promise<Response> {
     if (p.length === 2 && m === "GET") {
       const ev = await getEvent(env, eventId);
       const s = await env.DB.prepare("SELECT COUNT(DISTINCT guest_id) AS g, COUNT(*) AS c, COALESCE(SUM(uploaded),0) AS u FROM photos WHERE event_id = ?").bind(eventId).first<{ g: number; c: number; u: number }>();
-      return json({ id: ev.id, name: ev.name, shotLimit: ev.shot_limit, status: ev.status, publishedAt: ev.published_at, stats: { guests: s?.g ?? 0, photos: s?.c ?? 0, uploaded: s?.u ?? 0 } });
+      const host = isHost(req, ev);
+      const out: Record<string, unknown> = { id: ev.id, name: ev.name, shotLimit: ev.shot_limit, status: ev.status, publishedAt: ev.published_at, kind: ev.kind, message: ev.message, stats: { guests: s?.g ?? 0, photos: s?.c ?? 0, uploaded: s?.u ?? 0 }, coverPhotoId: null };
+      if (ev.status === "published" || host) {
+        const c = await env.DB.prepare("SELECT id FROM photos WHERE event_id = ? AND uploaded = 1 ORDER BY taken_at, id LIMIT 1").bind(eventId).first<{ id: string }>();
+        out.coverPhotoId = c?.id ?? null;
+      }
+      if (host) {
+        const r = await env.DB.prepare("SELECT COALESCE(SUM(product='digital'),0) AS d, COALESCE(SUM(product='print'),0) AS p, COALESCE(SUM(amount),0) AS r FROM orders WHERE event_id = ?").bind(eventId).first<{ d: number; p: number; r: number }>();
+        out.sales = { digital: r?.d ?? 0, print: r?.p ?? 0, revenue: r?.r ?? 0 };
+      }
+      return json(out);
     }
 
     // GET /api/events/:id/guests/:guestId
@@ -193,11 +219,12 @@ async function route(req: Request, env: Env): Promise<Response> {
     if (p[2] === "album" && p.length === 3 && m === "GET") {
       const ev = await getEvent(env, eventId);
       if (ev.status !== "published") throw new HttpError(403, "album is not available before publishing");
-      const rows = await env.DB.prepare("SELECT id, taken_at FROM photos WHERE event_id = ? AND uploaded = 1 ORDER BY taken_at, id").bind(eventId).all<{ id: string; taken_at: string }>();
-      const list = rows.results.map((r) => ({ id: r.id, url: photoUrl(origin, r.id), takenAt: r.taken_at }));
+      const rows = await env.DB.prepare("SELECT id, taken_at, guest_id FROM photos WHERE event_id = ? AND uploaded = 1 ORDER BY taken_at, id").bind(eventId).all<{ id: string; taken_at: string; guest_id: string }>();
+      const qg = url.searchParams.get("guestId");
+      const list = rows.results.map((r) => ({ id: r.id, url: photoUrl(origin, r.id), takenAt: r.taken_at, mine: !!qg && r.guest_id === qg }));
       const g = await env.DB.prepare("SELECT COUNT(DISTINCT guest_id) AS g FROM photos WHERE event_id = ? AND uploaded = 1").bind(eventId).first<{ g: number }>();
       return json({
-        event: { id: ev.id, name: ev.name, shotLimit: ev.shot_limit, status: ev.status, publishedAt: ev.published_at },
+        event: { id: ev.id, name: ev.name, shotLimit: ev.shot_limit, status: ev.status, publishedAt: ev.published_at, kind: ev.kind, message: ev.message },
         stats: { guests: g?.g ?? 0, photos: list.length },
         pages: buildPages(list),
       });

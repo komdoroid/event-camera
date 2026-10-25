@@ -1,0 +1,2 @@
+ALTER TABLE events ADD COLUMN kind TEXT NOT NULL DEFAULT 'other';
+ALTER TABLE events ADD COLUMN message TEXT;
