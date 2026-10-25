@@ -7,8 +7,8 @@
 - 本番: フロント https://event-camera.kom-commoc.workers.dev ／ API https://event-camera-api.kom-commoc.workers.dev
 - 方針: 結婚式専用ではなく、さまざまなイベント向けの「絵日記カメラ」（docs/brief.md「方針の変更（2026-10-25）」、全体の UX は docs/design.md）
 - 本番の API は T19 まで反映済み（D1 マイグレーション 0002 も適用済み）
-- **フロントの本番は、まだ T17 の版**。T20b・T21 と、レビューの修正（コミット `8948759` まで）は未反映
-- 作業中: T22（qa-tester による全体の確認）。結果を見て、問題がなければフロントを本番に反映する
+- フロントも T22 の修正まで本番に反映済み（2026-10-25、`69fb562`）
+- 作業中: なし
 
 ## 次にやること
 1. T22 の結果を確認する（テストは `tests/README.md` の手順で再実行できる）。不具合があれば frontend-dev / backend-dev に戻す
