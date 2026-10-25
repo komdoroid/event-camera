@@ -11,10 +11,10 @@
 - 作業中: なし
 
 ## 次にやること
-1. T22 の結果を確認する（テストは `tests/README.md` の手順で再実行できる）。不具合があれば frontend-dev / backend-dev に戻す
-2. フロントを本番に反映する（docs/deploy.md の「フロントを変えたとき」）。反映後、`/host`・`/e/09397db3/album` を確認する
-3. 実機（iPhone Safari・Android Chrome）で、ようこそ → 撮影 → アルバム → 購入、ホストの紹介 → 作成 → 印刷を確認する
-4. docs/findings.md に、比較の場で話す内容を足す
+1. 実機（iPhone Safari・Android Chrome）で、ようこそ → 撮影 → アルバム → 購入、ホストの紹介 → 作成 → 印刷 → ゲストに知らせる、を確認する
+2. 実機で見つかった点を frontend-dev / backend-dev に直してもらい、QA（`tests/e2e/p0.mjs` ほか）を通してから反映する
+3. docs/findings.md に、比較の場で話す内容を足す
+4. P1・P2 の検討（docs/design.md）。サンプルの3件の kind を直すかどうか（本番 D1 への UPDATE なので Kazuki の確認が要る）
 
 ## 新しい PC で用意すること
 - `git clone` → `cd api && npm install`、`cd web/app && npm install`、`cd tests && npm install && npx playwright install chromium`
