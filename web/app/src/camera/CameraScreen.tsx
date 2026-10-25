@@ -6,6 +6,7 @@ import { useThemeColor } from '../lib/useThemeColor';
 import { useAlive } from '../lib/useAlive';
 import { copyFor } from '../diary/copy';
 import { titleSize } from '../diary/format';
+import Phrase from '../lib/Phrase';
 import { Star, Sun, Wash } from '../diary/Doodles';
 import PermissionHelp from './PermissionHelp';
 import { DIAL_R, dialRidges } from './dial';
@@ -275,7 +276,7 @@ export default function CameraScreen({ event, guestId, initialRemaining, onFinis
             <Wash color="pink" style={{ right: '-12cqw', bottom: '-8cqw', width: '70cqw', height: '60cqw' }} />
             <Sun className="flow bob" style={{ width: '22cqw' }} />
             <p className="note" style={{ position: 'relative', zIndex: 1 }}>{C.welcomeLead}</p>
-            <h1 className="dtitle" style={{ fontSize: `${titleSize(event.name, 9)}cqw` }}>{event.name}</h1>
+            <h1 className="dtitle" style={{ fontSize: `${titleSize(event.name, 9)}cqw` }}><Phrase text={event.name} /></h1>
             {event.message && <p className="hostmsg">{event.message}</p>}
             <ul className="rules">{C.welcome.rules(event.shotLimit).map((r, i) => <li key={r}><b>{i + 1}</b>{r}</li>)}</ul>
             <Star className="flow" style={{ width: '9cqw' }} />

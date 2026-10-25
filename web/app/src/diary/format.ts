@@ -28,13 +28,16 @@ export function pageKind(layout: string, count: number): PageKind {
   return count <= 1 ? 'full' : count === 2 ? 'duo' : 'grid';
 }
 
+/** 見出しの letter-spacing(em)。diary.css の見出しと合わせる */
+export const TITLE_TRACKING = 0.01;
+
 /**
  * 長い題名を1行に近づけるための文字サイズ(cqw)。baseは通常のサイズ。
- * 8字まではそのまま、9〜12字は1行に収まる大きさ、13字以上はそれより小さくしない(2行まで)。
+ * 8字まではそのまま、9〜12字は字間込みで1行に収まる大きさ、13字以上は7.0で据え置き(2行まで)。
  */
 export function titleSize(name: string, base: number): number {
   const n = [...name].length;
   if (n <= 8) return base;
-  const fit = n <= 12 ? 86 / n : 7.2;
-  return Math.round(Math.min(base, fit) * 10) / 10;
+  const fit = n <= 12 ? 86 / (n * (1 + TITLE_TRACKING)) : 7;
+  return Math.floor(Math.min(base, fit) * 10) / 10;
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import QRCode from 'qrcode';
 import { api, type EventInfo, type HostPhoto } from '../api';
+import Phrase from '../lib/Phrase';
 import { KindIcon } from '../lib/KindIcon';
 import { themeStyle } from '../lib/kinds';
 import { hostStage, notifyText, type Stage } from './stage';
@@ -123,7 +124,7 @@ export default function HostEvent() {
   );
   return (
     <div className="host" style={themeStyle(ev?.kind)}><div className="host-in">
-      <h1 className="evtitle">{ev && <KindIcon kind={ev.kind} size={34} />}<span>{ev?.name ?? '読み込み中…'}</span></h1>
+      <h1 className="evtitle">{ev && <KindIcon kind={ev.kind} size={34} />}<span>{ev ? <Phrase text={ev.name} /> : '読み込み中…'}</span></h1>
       {loadErr && <div className="err" role="alert">状況を取得できません。通信を確認してください。</div>}
 
       {stage === 'ready' && (
@@ -215,7 +216,7 @@ export default function HostEvent() {
       {fullQr && (
         <div className="overlay full" onClick={() => setFullQr(false)}>
           <div className="fullqr">
-            <h1>{ev?.name}</h1>
+            <h1>{ev && <Phrase text={ev.name} />}</h1>
             <img src={qr} alt="ゲスト用QRコード" />
             <p>スマホで読み取って撮影をはじめましょう（タップで閉じる）</p>
           </div>

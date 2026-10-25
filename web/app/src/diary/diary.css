@@ -141,3 +141,5 @@
 /* 大きい見出しの折り返し: 「ー」や小書き文字が行頭に来ない・文節で折る */
 .dtitle, .diary h1, .welcome-ov h1, .cover h1 { line-break: strict; word-break: auto-phrase; text-wrap: balance; overflow-wrap: anywhere; letter-spacing: .01em; }
 .cover .vol, .welcome-ov .vol { letter-spacing: .04em; }
+/* 文節は <wbr> で区切るので、見出しは keep-all（Safari でも文節の途中で折れない） */
+.dtitle, .diary h1, .welcome-ov h1, .cover h1 { word-break: keep-all; }

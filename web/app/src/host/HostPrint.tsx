@@ -4,6 +4,7 @@ import QRCode from 'qrcode';
 import { api, type EventInfo } from '../api';
 import { KindIcon } from '../lib/KindIcon';
 import { themeStyle } from '../lib/kinds';
+import Phrase from '../lib/Phrase';
 import { guestUrl } from './hostLib';
 import './host.css';
 
@@ -29,7 +30,7 @@ export default function HostPrint() {
           {[0, 1, 2, 3].map((n) => (
             <div className="pcard" key={n} style={themeStyle(ev.kind)}>
               <KindIcon kind={ev.kind} size={36} />
-              <h1>{ev.name}</h1>
+              <h1><Phrase text={ev.name} /></h1>
               {ev.message && <p className="pnote">{ev.message}</p>}
               {qr && <img src={qr} alt="ゲスト用QRコード" />}
               <ol>

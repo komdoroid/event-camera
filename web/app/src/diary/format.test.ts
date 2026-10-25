@@ -28,13 +28,13 @@ describe('titleSize', () => {
     expect(titleSize('あいうえおかきく', 9)).toBe(9);
   });
   it('9〜12字は1行に収まる大きさまで小さくする', () => {
-    expect(titleSize('ウェディングパーティー', 13)).toBe(7.8);
-    expect(titleSize('あいうえおかきくけ', 13)).toBeCloseTo(9.6, 1);
-    expect(titleSize('あいうえおかきくけこさし', 13)).toBe(7.2);
+    expect(titleSize('ウェディングパーティー', 13)).toBe(7.7);
+    expect(titleSize('あいうえおかきくけ', 13)).toBe(9.4);
+    expect(titleSize('あいうえおかきくけこさし', 13)).toBe(7);
   });
-  it('13字以上は7.2で据え置き。baseより大きくならない', () => {
-    expect(titleSize('あ'.repeat(13), 13)).toBe(7.2);
-    expect(titleSize('あ'.repeat(40), 13)).toBe(7.2);
+  it('13字以上は7.0で据え置き。baseより大きくならない', () => {
+    expect(titleSize('あ'.repeat(13), 13)).toBe(7);
+    expect(titleSize('あ'.repeat(40), 13)).toBe(7);
     expect(titleSize('あ'.repeat(9), 9)).toBe(9);
   });
 });

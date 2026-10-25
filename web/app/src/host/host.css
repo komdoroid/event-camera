@@ -228,3 +228,4 @@
 
 /* 見出しの折り返しと字間 */
 .htitle, .host h1, .host h2, .hprint h1, .intro h1, .evtitle span { line-break: strict; word-break: auto-phrase; text-wrap: balance; letter-spacing: .01em; }
+.host h1, .hprint h1, .evtitle span { word-break: keep-all; }
