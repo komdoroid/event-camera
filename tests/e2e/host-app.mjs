@@ -6,7 +6,7 @@ const SHOT = new URL("../screenshots/", import.meta.url).pathname;
 let ng = 0;
 const out = (n, ok, d = "") => { if (!ok) ng++; console.log(`${ok ? "OK " : "NG "} ${n}${d ? " : " + d : ""}`); };
 const browser = await chromium.launch();
-const mkctx = async () => { const c = await browser.newContext({ viewport: { width: 375, height: 700 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true }); const p = await c.newPage(); p.errors = []; p.on("console", (m) => { if (m.type() === "error") p.errors.push(m.text()); }); p.on("pageerror", (e) => p.errors.push("pageerror " + e.message)); return p; };
+const mkctx = async () => { const c = await browser.newContext({ viewport: { width: 375, height: 700 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true }); await c.addInitScript(() => { try { localStorage.setItem("ec.introSeen", "1"); localStorage.setItem("ec.installShown", "1"); } catch {} }); const p = await c.newPage(); p.errors = []; p.on("console", (m) => { if (m.type() === "error") p.errors.push(m.text()); }); p.on("pageerror", (e) => p.errors.push("pageerror " + e.message)); return p; };
 const noH = (p) => p.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
 const snap = (p, n, full = false) => p.waitForTimeout(500).then(() => p.screenshot({ path: `${SHOT}host-app-${n}.png`, fullPage: full }));
 const on = (p) => p.evaluate(() => [...document.querySelectorAll(".htabs a.tab.on")].map((a) => a.innerText.trim()));
@@ -18,7 +18,7 @@ await p.waitForURL(`${WEB}/host`);
 out("/ -> /host へ移る", true);
 await p.waitForSelector(".empty");
 out("空のときの表示", (await p.locator(".empty h1").innerText()).includes("まだイベントがありません"));
-out("title", (await p.title()) === "ふたりの絵日記カメラ", await p.title());
+out("title", (await p.title()) === "絵日記カメラ", await p.title());
 out("空: 下部タブでホームが選択中", (await on(p)).join() === "ホーム", (await on(p)).join());
 out("空: 横スクロールなし", await noH(p));
 await snap(p, "01-empty");
@@ -51,7 +51,7 @@ await snap(p, "04-manage-bottom");
 await p.click(".hback");
 await p.waitForSelector(".evcard");
 out("戻ると一覧にカードが出る", (await p.locator(".evcard").count()) === 1);
-await p.waitForSelector(".chip");
+await p.waitForSelector(".evcard .chip");
 let txt = await p.locator(".evcard").innerText();
 out("カード: 名前・状態・枚数", txt.includes("Host App Test") && txt.includes("撮影中") && txt.includes("ゲスト 0 人 ・ 0 枚"), txt.replace(/\n/g, " / "));
 // API で写真を入れて現像 -> カード更新
@@ -68,22 +68,22 @@ txt = await p.locator(".evlist").innerText();
 out("一覧: 2件。枚数と現像済みチップが反映", txt.includes("ゲスト 1 人 ・ 1 枚") && txt.includes("現像済み") && txt.includes("撮影中"), txt.replace(/\n/g, " / "));
 out("管理用リンクで開いたイベントが一覧に追加される", txt.includes("Second Event"));
 const names = await p.locator(".evname2").allInnerTexts();
-out("新しい順 (Second が先頭)", names[0] === "Second Event", names.join(","));
+out("撮影中を上に固定（Host App Test が先頭、現像済みの Second は下）", names[0] === "Host App Test" && names[1] === "Second Event", names.join(","));
 await snap(p, "05-list");
 out("一覧: 横スクロールなし", await noH(p));
 // カード -> 管理
-await p.locator(".evmain").nth(1).click();
+await p.locator(".evmain").nth(0).click();
 await p.waitForURL(`${WEB}/host/${id}`);
 await p.waitForSelector("img.qr");
 out("カードから管理画面へ（hostToken が保存済みで入れる）", true);
 await p.click(".hback"); await p.waitForSelector(".evcard");
 // ⋯ -> 外す
-await p.locator(".evdel").nth(1).click();
+await p.locator(".evdel").nth(0).click();
 await p.waitForSelector("[role=dialog]");
 await snap(p, "06-remove-dialog");
 await p.click("[role=dialog] button:has-text('やめる')");
 out("やめるで残る", (await p.locator(".evcard").count()) === 2);
-await p.locator(".evdel").nth(1).click();
+await p.locator(".evdel").nth(0).click();
 await p.click("[role=dialog] button:has-text('外す')");
 await p.waitForTimeout(300);
 out("外すと一覧から消える", (await p.locator(".evcard").count()) === 1 && !(await p.locator(".evlist").innerText()).includes("Host App Test"));
@@ -123,8 +123,11 @@ for (const [name, url, sel] of [["guest-camera", `/e/${e3.id}`, ".cam"], ["guest
   await gp.goto(`${WEB}/host`);
   const before = await gp.evaluate(() => document.querySelector('meta[name=theme-color]')?.content);
   await gp.goto(`${WEB}/e/${e3.id}`); await gp.waitForSelector(".cam");
+  const wel = await gp.evaluate(() => document.querySelector('meta[name=theme-color]')?.content);
+  console.log(`   ようこそ画面 theme-color=${wel}（白いページ）`);
+  await gp.click("text=カメラをはじめる"); await gp.waitForSelector(".cam .start [role=alert], .cam .deny, .cam-bot .lbl.stat"); await gp.waitForTimeout(500);
   const cam = await gp.evaluate(() => document.querySelector('meta[name=theme-color]')?.content);
-  out("カメラ画面の theme-color が黒", /^#0|^#1|black/i.test(cam ?? ""), `host=${before} camera=${cam}`);
+  out("ようこそを過ぎたカメラ画面の theme-color が黒", /^#0|^#1|black/i.test(cam ?? ""), `host=${before} welcome=${wel} camera=${cam}`);
   await gp.close();
 }
 // 4. manifest / アイコン / installability

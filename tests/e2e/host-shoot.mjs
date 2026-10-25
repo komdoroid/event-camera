@@ -10,6 +10,7 @@ const browser = await chromium.launch({ args: ["--use-fake-ui-for-media-stream",
 const errors = [];
 const mk = async (cam = true) => {
   const c = await browser.newContext({ viewport: { width: 375, height: 700 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, permissions: cam ? ["camera"] : [] });
+  await c.addInitScript(() => { try { localStorage.setItem("ec.introSeen", "1"); localStorage.setItem("ec.installShown", "1"); } catch {} });
   const p = await c.newPage();
   p.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
   p.on("pageerror", (e) => errors.push("pageerror " + e.message));
@@ -17,7 +18,8 @@ const mk = async (cam = true) => {
 };
 const noH = (p) => p.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth && [...document.querySelectorAll(".host,.cam,.diary")].every((e) => e.scrollWidth <= e.clientWidth));
 const snap = async (p, n) => { await p.waitForTimeout(400); await p.screenshot({ path: `${SHOT}host-shoot-${n}.png` }); };
-const stat = (p) => p.evaluate(() => [...document.querySelectorAll(".stats b")].map((b) => b.textContent));
+// 管理画面の数字。準備中は出ない(0枚)。撮影中は [撮影枚数, 参加ゲスト]
+const stat = (p) => p.evaluate(() => { const b = [...document.querySelectorAll(".stage .stats b")].map((x) => x.textContent); return b.length ? { photos: b[0], guests: b[1] } : { photos: "0", guests: "0" }; });
 async function shoot(p, first) {
   if (first) await p.click("text=カメラをはじめる");
   await p.waitForFunction(() => document.querySelector(".cam-bot .lbl.stat")?.textContent?.includes("撮影できます"));
@@ -35,20 +37,20 @@ async function wind(p) {
 // ---- 3. 名前を空のまま作ると「ウェディングパーティー」 + 1. わたしも撮る
 const host = await mk();
 await host.goto(`${WEB}/host/new`); await host.waitForSelector("form");
-out("/host/new の placeholder が「ウェディングパーティー」", (await host.locator('input:not([type])').getAttribute("placeholder")) === "ウェディングパーティー");
+out("/host/new の placeholder が種類の例「みんなのイベント」", (await host.locator('input:not([type])').getAttribute("placeholder")) === "みんなのイベント");
 await host.fill('input[type=number]', "5");
 await host.click("form button.hbtn");
 await host.waitForURL((u) => /\/host\/[0-9a-f]{8}$/.test(u.pathname));
 const id = host.url().split("/").pop();
-await host.waitForSelector("img.qr");
-out("名前が空でも作れて、イベント名が「ウェディングパーティー」", (await host.locator("h1").first().innerText()) === "ウェディングパーティー", await host.locator("h1").first().innerText());
+await host.waitForSelector("img.qr"); await host.waitForFunction(() => !document.querySelector("h1.evtitle")?.textContent.includes("読み込み中"));
+out("名前が空でも作れて、イベント名が「みんなのイベント」", (await host.locator("h1").first().innerText()) === "みんなのイベント", await host.locator("h1").first().innerText());
 const info = await (await fetch(`${API}/events/${id}`)).json();
-out("API 側のイベント名も「ウェディングパーティー」", info.name === "ウェディングパーティー", info.name);
+out("API 側のイベント名も「みんなのイベント」", info.name === "みんなのイベント", info.name);
 await host.fill('input[type=text]', "").catch(() => {});
 // 空白だけの名前でも既定名になる
 await host.goto(`${WEB}/host/new`); await host.fill('input:not([type])', "   "); await host.click("form button.hbtn");
-await host.waitForURL((u) => /\/host\/[0-9a-f]{8}$/.test(u.pathname) && !u.pathname.endsWith(id)); await host.waitForSelector("img.qr");
-out("空白だけの名前でも既定名", (await host.locator("h1").first().innerText()) === "ウェディングパーティー");
+await host.waitForURL((u) => /\/host\/[0-9a-f]{8}$/.test(u.pathname) && !u.pathname.endsWith(id)); await host.waitForSelector("img.qr"); await host.waitForFunction(() => !document.querySelector("h1.evtitle")?.textContent.includes("読み込み中"));
+out("空白だけの名前でも既定名", (await host.locator("h1").first().innerText()) === "みんなのイベント");
 // 一覧にも既定名で入る
 await host.goto(`${WEB}/host/${id}`); await host.waitForSelector("img.qr");
 
@@ -70,10 +72,10 @@ await host.waitForTimeout(1500); // アップロード完了待ち
 await host.click(".cam-top a.hostback");
 await host.waitForURL(`${WEB}/host/${id}`); await host.waitForSelector("img.qr");
 out("「管理画面へ」でダッシュボードに戻る", true);
-await host.waitForFunction(() => document.querySelectorAll(".stats b")[1]?.textContent === "2", null, { timeout: 8000 }).catch(() => {});
+await host.waitForFunction(() => document.querySelectorAll(".stage .stats b")[0]?.textContent === "2", null, { timeout: 8000 }).catch(() => {});
 const after = await stat(host);
-out("撮影枚数が増えている", Number(after[1]) === Number(before[1]) + 2, `before=${before} after=${after}`);
-out("参加ゲストが1人になる", after[0] === "1", `${after}`);
+out("撮影枚数が増えている", Number(after.photos) === Number(before.photos) + 2, `before=${JSON.stringify(before)} after=${JSON.stringify(after)}`);
+out("参加ゲストが1人になる", after.guests === "1", JSON.stringify(after));
 await snap(host, "03-dashboard-after");
 
 // ---- 2. ゲスト(トークンなし)には「管理画面へ」が出ない

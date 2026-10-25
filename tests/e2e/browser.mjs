@@ -15,6 +15,7 @@ const browser = await chromium.launch({ args: ["--use-fake-ui-for-media-stream",
 
 async function newCtx(opts = {}) {
   const ctx = await browser.newContext({ viewport: { width: 375, height: 700 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, permissions: opts.cam ? ["camera"] : [], ...opts.ctx });
+  await ctx.addInitScript(() => { try { localStorage.setItem("ec.introSeen", "1"); } catch {} });
   const page = await ctx.newPage();
   const errors = [];
   page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
@@ -29,6 +30,11 @@ async function snap(page, name, errors, { full = false } = {}) {
   const inner = await page.evaluate(() => [...document.querySelectorAll(".diary,.host,.cam")].map((e) => e.scrollWidth - e.clientWidth).filter((d) => d > 0));
   await page.screenshot({ path: `${OUT}${MODE}-${name}.png`, fullPage: full });
   check(`[${MODE}] ${name}: 横スクロールなし`, sw <= cw && inner.length === 0, `scrollWidth=${sw} clientWidth=${cw} inner=${JSON.stringify(inner)}`);
+}
+
+// アルバムは1ページずつ表示（P0）。最後のページ（.dpage.end）まで「つぎ」で進む
+async function toEnd(page) {
+  for (let i = 0; i < 40 && !(await page.locator(".dpage.end").count()); i++) { await page.click(".pager button:has-text('つぎ')"); await page.waitForTimeout(60); }
 }
 const finish = (name, errors) => check(`[${MODE}] ${name}: コンソールエラーなし`, errors.length === 0, errors.slice(0, 3).join(" | "));
 
@@ -56,6 +62,11 @@ let hostEventId = null, hostToken = null;
   await page.waitForSelector("img.qr");
   check(`[${MODE}] 再読み込みで管理画面に戻れる`, (await page.locator("h1").first().innerText()).length > 0 && !(await page.locator("text=ホストの権限がありません").count()));
   if (MODE === "mock") await page.waitForSelector(".thumbs img");
+  if (MODE === "real") { // P0 の管理画面は、写真が1枚もない間は「現像する」を出さない（準備中）。1枚入れてから確認する
+    const s = await (await fetch(`${API}/events/${hostEventId}/shots`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ guestId: "browser-host-seed-1" }) })).json();
+    await fetch(s.uploadUrl, { method: "PUT", headers: { "Content-Type": "image/jpeg" }, body: Buffer.from("/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/wAALCAABAAEBAREA/8QAFAABAAAAAAAAAAAAAAAAAAAAAP/EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAD8AKp//2Q==", "base64") });
+    await page.reload(); await page.waitForSelector("img.qr");
+  }
   await page.click("button:has-text('現像する')");
   await page.waitForSelector("[role=dialog]");
   await snap(page, "host-publish-dialog", errors);
@@ -147,6 +158,7 @@ if (MODE === "mock") {
     const broken = await page.evaluate(() => [...document.images].filter((i) => !(i.complete && i.naturalWidth > 0)).length);
     check(`[real] アルバムの画像がすべて表示される`, broken === 0, `壊れた画像=${broken}`);
     await snap(page, "guest-album-cover", errors);
+    await toEnd(page);
     await page.click("text=えらぶ");
     await page.waitForSelector(".buy");
     await snap(page, "guest-buy", errors);
@@ -169,19 +181,19 @@ if (MODE === "mock") {
   await page.waitForSelector(".dpage.cover");
   await snap(page, "guest-album-cover", errors);
   await page.waitForTimeout(500);
-  const h = await page.evaluate(() => document.querySelector(".diary").scrollHeight);
-  await page.screenshot({ path: `${OUT}${MODE}-guest-album-full.png`, fullPage: true });
-  // 各ページを順にスクショ
-  const pages = await page.locator(".dpage").count();
-  for (let i = 0; i < pages; i++) {
-    await page.locator(".dpage").nth(i).scrollIntoViewIfNeeded();
-    await page.locator(".dpage").nth(i).screenshot({ path: `${OUT}${MODE}-album-page-${String(i).padStart(2, "0")}.png` });
+  // 1ページずつ表示。ページ番号「1 / N」を読み、全ページを順にスクショ
+  const total = Number((await page.locator(".pn").innerText()).split("/")[1]);
+  let overflowPages = 0;
+  for (let i = 0; i < total; i++) {
+    await page.locator(".dpage").first().screenshot({ path: `${OUT}${MODE}-album-page-${String(i).padStart(2, "0")}.png` });
+    const { sw, cw } = await noHscroll(page);
+    const inner = await page.evaluate(() => [...document.querySelectorAll(".dpage")].filter((e) => e.scrollWidth > e.clientWidth + 1 && getComputedStyle(e).overflowX !== "hidden").length);
+    if (sw > cw || inner) overflowPages++;
+    if (i < total - 1) { await page.click(".pager button:has-text('つぎ')"); await page.waitForTimeout(60); }
   }
-  check(`[mock] アルバムのページ数 (${pages})`, pages >= 5, `scrollHeight=${h}`);
-  const { sw, cw } = await noHscroll(page);
-  // overflow:hidden で切られている装飾は除外
-  const inner = await page.evaluate(() => [...document.querySelectorAll(".dpage")].filter((e) => e.scrollWidth > e.clientWidth + 1 && getComputedStyle(e).overflowX !== "hidden").length);
-  check(`[mock] アルバム全ページで横はみ出しなし`, sw <= cw && inner === 0, `sw=${sw} cw=${cw} overflowPages=${inner}`);
+  check(`[mock] アルバムのページ数 (${total}、最後は「おわりのページ」)`, total >= 5, `total=${total}`);
+  check(`[mock] アルバム全ページで横はみ出しなし`, overflowPages === 0, `overflowPages=${overflowPages}`);
+  check(`[mock] 最後のページに「えらぶ」`, (await page.locator(".dpage.end").count()) === 1);
   await page.click("text=えらぶ");
   await page.waitForSelector(".buy");
   await snap(page, "guest-buy", errors);
@@ -192,7 +204,8 @@ if (MODE === "mock") {
   await snap(page, "guest-done", errors);
   check(`[mock] 完了画面に商品名と金額`, (await page.locator("body").innerText()).includes("¥3,000"));
   await page.click("text=アルバムにもどる");
-  await page.waitForSelector(".dpage.cover");
+  await page.waitForSelector(".dpage.end");
+  check(`[mock] 購入後、最後のページが「購入済み」になる`, (await page.locator(".dpage.end .paidtag").innerText()) === "購入済み");
   finish("アルバム〜購入", errors);
   await ctx.close();
 }

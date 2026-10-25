@@ -9,6 +9,7 @@ const browser = await chromium.launch();
 const errors = [];
 const mk = async () => {
   const c = await browser.newContext({ viewport: { width: 375, height: 700 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+  await c.addInitScript(() => { try { localStorage.setItem("ec.introSeen", "1"); localStorage.setItem("ec.installShown", "1"); } catch {} });
   const p = await c.newPage();
   p.on("console", (m) => { if (m.type() === "error" && !/401|Unauthorized|403/.test(m.text())) errors.push(m.text()); });
   p.on("pageerror", (e) => errors.push("pageerror " + e.message));
@@ -148,13 +149,15 @@ const names3 = ["ガーデンBBQ", "誕生日パーティー", "ウェディン�
 // ---- 3. ハッシュの管理用リンクの検証
 {
   const e = await mkEv("ハッシュ検証");
+  { const s = await (await fetch(`${API}/events/${e.id}/shots`, { method: "POST", headers: J, body: JSON.stringify({ guestId: "hash-check-guest-1" }) })).json(); // 1枚入れる（0枚の間は「現像する」が出ない）
+    await fetch(s.uploadUrl, { method: "PUT", headers: { "Content-Type": "image/jpeg" }, body: Buffer.from("/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/wAALCAABAAEBAREA/8QAFAABAAAAAAAAAAAAAAAAAAAAAP/EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAD8AKp//2Q==", "base64") }); }
   // 3a. 有効なトークン保存済みの端末で、間違ったハッシュ
   const p = await mk();
   await p.goto(`${WEB}/host`);
   await p.evaluate(([id, t]) => localStorage.setItem(`ec.hostToken.${id}`, t), [e.id, e.hostToken]);
   await p.goto(`${WEB}/host/${e.id}#t=wrong`);
   await p.waitForSelector("img.qr"); await p.waitForTimeout(1200);
-  out("3a. 保存済みの有効トークン + #t=wrong → 管理画面が使える", (await p.locator("h1").first().innerText()) === "ハッシュ検証" && (await p.locator("text=ホストの権限がありません").count()) === 0);
+  out("3a. 保存済みの有効トークン + #t=wrong → 管理画面が使える", (await p.locator("h1.evtitle").innerText()).trim() === "ハッシュ検証" && (await p.locator("text=ホストの権限がありません").count()) === 0);
   out("3a. 保存済みトークンは消えない", (await p.evaluate((id) => localStorage.getItem(`ec.hostToken.${id}`), e.id)) === e.hostToken);
   out("3a. ハッシュが URL から消える", !p.url().includes("#t="), p.url());
   await p.click("button:has-text('現像する')"); await p.click("[role=dialog] button:has-text('現像する')");
