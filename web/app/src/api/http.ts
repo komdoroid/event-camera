@@ -15,7 +15,7 @@ const post = (body: unknown) => ({ method: 'POST', body: JSON.stringify(body) })
 
 export const httpApi: Api = {
   createEvent: (b) => req('/api/events', post(b)),
-  getEvent: (id) => req(`/api/events/${id}`),
+  getEvent: (id, token) => req(`/api/events/${id}`, { token }),
   getGuest: (e, g) => req(`/api/events/${e}/guests/${g}`),
   createShot: (e, guestId) => req(`/api/events/${e}/shots`, post({ guestId })),
   async uploadPhoto(uploadUrl, blob) {
@@ -24,7 +24,13 @@ export const httpApi: Api = {
     if (!res.ok) throw new ApiError(res.status);
   },
   publish: (e, token) => req(`/api/events/${e}/publish`, { method: 'POST', token }),
-  getAlbum: (e) => req(`/api/events/${e}/album`),
+  getAlbum: (e, guestId) => req(`/api/events/${e}/album${guestId ? `?guestId=${encodeURIComponent(guestId)}` : ''}`),
   listPhotos: (e, token) => req(`/api/events/${e}/photos`, { token }),
   createOrder: (e, guestId, product) => req(`/api/events/${e}/orders`, post({ guestId, product })),
 };
+
+/** coverPhotoId から写真URLを作る。公開前はホストトークンが必要（?token=） */
+export function photoUrl(photoId: string, hostToken?: string): string {
+  const u = `${API_BASE}/api/photos/${photoId}`;
+  return hostToken ? `${u}?token=${encodeURIComponent(hostToken)}` : u;
+}
