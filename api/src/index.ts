@@ -172,10 +172,6 @@ async function route(req: Request, env: Env): Promise<Response> {
         const c = await env.DB.prepare("SELECT id FROM photos WHERE event_id = ? AND uploaded = 1 ORDER BY taken_at, id LIMIT 1").bind(eventId).first<{ id: string }>();
         out.coverPhotoId = c?.id ?? null;
       }
-      if (host) {
-        const r = await env.DB.prepare("SELECT COALESCE(SUM(product='digital'),0) AS d, COALESCE(SUM(product='print'),0) AS p, COALESCE(SUM(amount),0) AS r FROM orders WHERE event_id = ?").bind(eventId).first<{ d: number; p: number; r: number }>();
-        out.sales = { digital: r?.d ?? 0, print: r?.p ?? 0, revenue: r?.r ?? 0 };
-      }
       return json(out);
     }
 

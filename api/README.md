@@ -35,3 +35,10 @@ curl -s -X POST $B/events/$ID/orders -H "$J" -d "{\"guestId\":\"$G\",\"product\"
 - 本番の D1 の ID は `wrangler.toml` に設定済み。デプロイは `wrangler deploy`（Kazuki の確認のうえで実行）
 - 現像後でも、現像前に確保した枠のアップロード（署名の期限内）は受け付ける（現像直前の写真を失わないため）
 - 画像の配信には `nosniff` と `CSP: default-src 'none'` を付ける
+
+## 売上の集計（開発者向け）
+販売部数・売上は API では返さない（ユーザーには見せない）。`orders` テーブルを直接集計する。
+```
+npx wrangler d1 execute event-camera --remote --command "SELECT event_id, product, COUNT(*), SUM(amount) FROM orders GROUP BY 1,2"
+```
+ローカルは `--remote` を `--local` に替える。
