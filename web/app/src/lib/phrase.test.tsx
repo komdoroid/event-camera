@@ -19,7 +19,7 @@ describe('Phrase', () => {
     const ps = phrases('株式会社サンプル創立二十周年記念パーティー懇親会');
     const html = renderToStaticMarkup(<Phrase text="株式会社サンプル創立二十周年記念パーティー懇親会" />);
     expect(html.split('<wbr/>').length - 1).toBe(ps.length - 1);
-    expect(html.replace(/<wbr\/>/g, '')).toBe('株式会社サンプル創立二十周年記念パーティー懇親会');
+    expect(html.replace(/<wbr\/>|<\/?span[^>]*>/g, '')).toBe('株式会社サンプル創立二十周年記念パーティー懇親会');
   });
-  it('1文節なら wbr なし', () => expect(renderToStaticMarkup(<Phrase text="同窓会" />)).toBe('同窓会'));
+  it('1文節なら wbr なし', () => expect(renderToStaticMarkup(<Phrase text="同窓会" />)).toBe('<span class="phrase">同窓会</span>'));
 });
