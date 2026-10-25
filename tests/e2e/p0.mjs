@@ -1,4 +1,4 @@
-// T22: 複数イベント向け P0（ホストの紹介・種類・段階・印刷・売れた数・表紙、ゲストのようこそ・権限案内・ページ送り・シール・購入）。
+// T22: 複数イベント向け P0（ホストの紹介・種類・段階・印刷・表紙、ゲストのようこそ・権限案内・ページ送り・シール・購入）。
 // 実 API(:8787) + 実 API 向けの web(:5173、vite preview)。ローカルのみ。最後の「本番の読み取り」だけ本番 API に GET する（何も作らない）。
 import { chromium } from "playwright";
 import { createRequire } from "node:module";
@@ -145,7 +145,7 @@ await sec("H2 イベント作成（種類・ひとこと・空の名前）", asy
   await p.close();
 });
 
-let evS; // 段階・売れた数を見るイベント
+let evS; // 段階を見るイベント
 await sec("H3 管理画面の3段階（主ボタンは常に1つ）", async () => {
   evS = await mkEv({ name: "段階テスト", shotLimit: 5, kind: "party", message: "かんぱい！" });
   const p = await mk(); await p.goto(`${WEB}/host`); await addToken(p, evS);
@@ -171,15 +171,17 @@ await sec("H3 管理画面の3段階（主ボタンは常に1つ）", async () =
   out("現像後: 段階が「現像済み」になる", true);
   out("現像済み: 主ボタンはちょうど1つ（ゲストに知らせる）", (await primaries(p)) === 1 && (await p.locator(".stage .hbtn.ghost").innerText()) === "ゲストに知らせる", `ghost=${await primaries(p)}`);
   out("現像済み: 「アルバムを見る」", (await p.locator(".stage a.shoot").innerText()) === "アルバムを見る");
-  const sales0 = await p.locator(".sales .stats b").allInnerTexts();
-  out("売れた数: 購入前は 0 / 0 / ¥0", sales0.join() === "0,0,¥0", sales0.join());
+  const body0 = await p.locator("body").innerText();
+  out("現像済み: 「売れた数」と ¥ の合計は出ない（売上は開発側だけ）", (await p.locator(".sales").count()) === 0 && !body0.includes("売れた") && !body0.includes("¥"), body0.includes("¥") ? "¥ が表示されている" : "");
+  out("現像済み: 封筒のイラスト・主ボタン「ゲストに知らせる」・従「アルバムを見る」", (await p.locator(".stage svg.donehero").count()) === 1 && (await p.locator(".stage .hbtn.ghost").innerText()) === "ゲストに知らせる" && (await p.locator(".stage a.hbtn.shoot").innerText()) === "アルバムを見る");
+  out("現像済み(375px): 横スクロールなし", await noH(p));
   await snap(p, "host-stage-developed");
   await p.close();
   // 鍵なしの GET では sales は出ない
   const pub = await (await fetch(`${API}/events/${evS.id}`)).json();
-  out("API: 鍵なしでは sales が出ない・coverPhotoId は現像後に出る", pub.sales === undefined && typeof pub.coverPhotoId === "string", JSON.stringify({ sales: pub.sales, cover: pub.coverPhotoId }));
+  out("API: 鍵なしでも sales が無い・coverPhotoId は現像後に出る", pub.sales === undefined && typeof pub.coverPhotoId === "string", JSON.stringify({ sales: pub.sales, cover: pub.coverPhotoId }));
   const keyed = await (await fetch(`${API}/events/${evS.id}`, auth(evS))).json();
-  out("API: 鍵ありなら sales が出る", keyed.sales && keyed.sales.digital === 0 && keyed.sales.print === 0 && keyed.sales.revenue === 0, JSON.stringify(keyed.sales));
+  out("API: 鍵ありでも sales のキーが無い", !("sales" in keyed), JSON.stringify(Object.keys(keyed)));
 });
 
 await sec("H4 ゲストに知らせる（共有 / コピーのフォールバック）", async () => {
@@ -234,7 +236,7 @@ await sec("G0 準備: アルバム用イベント（種類別）を作る", asyn
   out("準備: 3イベントを現像まで作った", Object.values(P).every((e) => e.id));
 });
 
-await sec("H6 マイイベント（表紙・撮影中が上・売れた数）", async () => {
+await sec("H6 マイイベント（表紙・撮影中が上・売れた数は出ない）", async () => {
   // 撮影中(古い) と 現像済み(新しい) と 写真0枚
   const shooting = await mkEv({ name: "撮影中の古いイベント", shotLimit: 5, kind: "trip" }); await shot(shooting.id, "p0-guest-s-00001", 3);
   const empty = await mkEv({ name: "まだ0枚", shotLimit: 5, kind: "birthday" });
@@ -252,7 +254,7 @@ await sec("H6 マイイベント（表紙・撮影中が上・売れた数）", 
   out("写真のあるイベントは表紙の写真（撮影中は鍵つき、現像後は鍵なし）が出る", covers[iS].img && covers[iS].ok && covers[iP].img && covers[iP].ok, JSON.stringify(covers));
   out("写真0枚は種類のアイコン", !covers[iE].img && (await p.locator(".evcard").nth(iE).locator(".evcover svg").count()) === 1);
   const t1 = await p.locator(".evcard").nth(iP).innerText();
-  out("現像済みのカードに「売れた n 冊」", t1.includes("売れた 0 冊") && t1.includes("現像済み"), t1.replace(/\n/g, " / "));
+  out("現像済みのカードに「売れた n 冊」が出ない", !t1.includes("売れた") && t1.includes("現像済み"), t1.replace(/\n/g, " / "));
   await snap(p, "host-list");
   out("マイイベントにサンプルへのリンク", (await p.locator(".samples .chip.sample").count()) === 3);
   await p.close();
@@ -458,18 +460,22 @@ await sec("G5 購入: 選ぶシート → デジタル → 購入済み → 印�
   await q.click(".donep >> text=アルバムにもどる"); await q.waitForSelector(".dpage.end");
   out("印刷購入後: 「購入済み」・「写真を保存」は出ない", (await q.locator(".dpage.end .paidtag").count()) === 1 && (await q.locator(".dpage.end button:has-text('写真を保存')").count()) === 0);
   await q.close();
-  // 売れた数（ホスト側）
+  // 売れた数はホストに見せない（開発側の集計のみ）。注文自体は作られる
   const keyed = await (await fetch(`${API}/events/${E.id}`, auth(E))).json();
-  out("API: sales = デジタル1・印刷1・¥3,500", keyed.sales.digital === 1 && keyed.sales.print === 1 && keyed.sales.revenue === 3500, JSON.stringify(keyed.sales));
+  out("API: 購入後も sales のキーが無い（有効な鍵でも）", !("sales" in keyed), JSON.stringify(Object.keys(keyed)));
   const h = await mk(); await h.goto(`${WEB}/host`); await addToken(h, E);
-  await h.goto(`${WEB}/host/${E.id}`); await h.waitForSelector(".sales"); await loaded(h);
-  const s = await h.locator(".sales .stats").innerText();
-  out("管理画面の売れた数: デジタル1・印刷1・合計¥3,500", s.replace(/\s+/g, " ").includes("1 デジタル") && s.replace(/\s+/g, " ").includes("1 印刷") && s.includes("¥3,500"), s.replace(/\n/g, " "));
-  out("管理画面: 「合計 2 冊」の注記", (await h.locator(".sales .notice").innerText()).includes("合計 2 冊"));
-  await snap(h, "host-sales");
+  await h.goto(`${WEB}/host/${E.id}`); await h.waitForSelector(".stage"); await loaded(h);
+  const hb = await h.locator("body").innerText();
+  out("管理画面: 購入後も「売れた数」「売れた」「¥」が出ない", (await h.locator(".sales").count()) === 0 && !hb.includes("売れた") && !hb.includes("¥"), hb.includes("¥") ? "¥ あり" : "");
+  await snap(h, "host-developed-after-sales");
   await h.goto(`${WEB}/host`); await h.evaluate((e) => { localStorage.setItem("ec.myEvents", JSON.stringify([{ id: e.id, name: "誕生日テスト", createdAt: new Date().toISOString() }])); }, E);
   await h.goto(`${WEB}/host`); await h.waitForSelector(".evcard .chip");
-  out("マイイベントのカードに「売れた 2 冊」", (await h.locator(".evcard").innerText()).includes("売れた 2 冊"), (await h.locator(".evcard").innerText()).replace(/\n/g, " / "));
+  out("マイイベントのカードに「売れた n 冊」が出ない", !(await h.locator(".evcard").innerText()).includes("売れた"), (await h.locator(".evcard").innerText()).replace(/\n/g, " / "));
+  const od = await fetch(`${API}/events/${E.id}/orders`, { method: "POST", headers: J, body: JSON.stringify({ guestId: "p0-order-check-0001", product: "digital" }) });
+  const odj = await od.json();
+  out("注文は今までどおり作られる（POST orders → 201）", od.status === 201 && odj.amount === 500 && odj.product === "digital", `${od.status} ${JSON.stringify(odj)}`);
+  const op = await fetch(`${API}/events/${E.id}/orders`, { method: "POST", headers: J, body: JSON.stringify({ guestId: "p0-order-check-0002", product: "print" }) });
+  out("印刷の注文も 201（¥3,000）", op.status === 201 && (await op.json()).amount === 3000, `${op.status}`);
   await h.close();
 });
 
