@@ -302,3 +302,4 @@
 - frontend-dev: 管理画面の「売れた数」とマイイベントの「売れた n 冊」を外し、クライアントの型から sales を消す
 - backend-dev: `GET /api/events/:id` から sales を外す。集計方法は api/README.md に書く
 - qa-tester: sales を確認しているテスト（p0.mjs など）を直して、回帰を確認する
+- T33 完了（API `9938e51`、画面 `a120144`）。T34 の QA は売上の非表示がすべて OK。T31 で入った「この端末にはホストの権限がありません」画面のはみ出しも直した（keep-all を `<Phrase>` の出力だけに限定）。API とフロントを本番に反映した（API 4bcf4da1、フロント 8d44d6d9）
