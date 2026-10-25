@@ -45,9 +45,13 @@
 .htabs { flex: none; display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--h-line); background: var(--page-bg); padding-bottom: env(safe-area-inset-bottom); z-index: 10; }
 .tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 56px; font-size: 11px; color: var(--page-mute); text-decoration: none; transition: transform .08s; }
 .tab.on { color: var(--page-ink); font-weight: 500; }
-.tab svg { box-sizing: content-box; padding: 3px 14px; width: 24px; border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px; }
-.tab.on svg { color: var(--h-ink); background: var(--tabc, var(--h-yellow)); }
-.tab:nth-child(2) { --tabc: var(--h-mint); }
+.tabicon { position: relative; display: grid; place-items: center; width: 64px; height: 32px; }
+.tabicon .ic { position: relative; z-index: 1; }
+.tab.on .ic { color: var(--h-ink); }
+.brush { position: absolute; left: -4px; top: -3px; width: calc(100% + 8px); height: calc(100% + 6px); overflow: visible; pointer-events: none; }
+.brush-in { animation: brushsweep .25s ease-out; }
+@keyframes brushsweep { from { clip-path: inset(-30% 100% -30% -30%); } to { clip-path: inset(-30% -30% -30% -30%); } }
+@media (prefers-reduced-motion: reduce) { .brush-in { animation: none; } }
 .tab:active { transform: scale(.94); }
 .hbtn:active:not(:disabled) { transform: scale(.97); }
 @media (prefers-reduced-motion: reduce) { .hpage { animation: none; } .hbtn, .tab, .evcard { transition: none; } }

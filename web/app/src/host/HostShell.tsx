@@ -1,11 +1,12 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { Brush } from '../lib/Brush';
 import { isIntroSeen } from '../lib/intro';
 import Intro from './Intro';
 import './host.css';
 
 const Icon = ({ d }: { d: string }) => (
-  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d} /></svg>
+  <svg className="ic" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d} /></svg>
 );
 
 function titleOf(path: string) {
@@ -38,10 +39,10 @@ export default function HostShell() {
       </main>
       <nav className="htabs" aria-label="メニュー">
         <NavLink to="/host" className={() => 'tab' + (!isNew ? ' on' : '')} aria-current={!isNew ? 'page' : undefined}>
-          <Icon d="M4 11 L12 4 L20 11 V20 H4 Z" /><span>ホーム</span>
+          <span className="tabicon">{!isNew && <Brush color="var(--h-yellow)" />}<Icon d="M4 11 L12 4 L20 11 V20 H4 Z" /></span><span>ホーム</span>
         </NavLink>
         <NavLink to="/host/new" className={() => 'tab' + (isNew ? ' on' : '')} aria-current={isNew ? 'page' : undefined}>
-          <Icon d="M12 5 V19 M5 12 H19" /><span>つくる</span>
+          <span className="tabicon">{isNew && <Brush color="var(--h-mint)" />}<Icon d="M12 5 V19 M5 12 H19" /></span><span>つくる</span>
         </NavLink>
       </nav>
     </div>
