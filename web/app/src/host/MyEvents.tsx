@@ -46,7 +46,7 @@ function Cover({ info, token }: { info: EventInfo | null; token: string | null }
   const id = info?.coverPhotoId;
   return (
     <div className="evcover" aria-hidden="true">
-      {id && !bad ? <img src={photoUrl(id, token ?? undefined)} alt="" loading="lazy" onError={() => setBad(true)} /> : <KindIcon kind={info?.kind ?? 'other'} size={36} />}
+      {id && !bad ? <img src={photoUrl(id, info?.status === 'published' ? undefined : token ?? undefined)} alt="" loading="lazy" onError={() => setBad(true)} /> : <KindIcon kind={info?.kind ?? 'other'} size={36} />}
     </div>
   );
 }

@@ -111,7 +111,7 @@ export default function HostEvent() {
     }
   }
 
-  const stage: Stage | null = ev ? hostStage(ev) : null;
+  const stage: Stage = ev ? hostStage(ev) : 'ready'; // 取得できない間も QR は出す
   const sold = ev?.sales ? ev.sales.digital + ev.sales.print : 0;
   const qrButtons = (primary: boolean) => (
     <div className="hrow">
