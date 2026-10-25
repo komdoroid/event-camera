@@ -9,7 +9,7 @@ import { copyFor } from './copy';
 import type { CSSProperties } from 'react';
 import { Arrow, Book, Confetti, Heart, Phone, Squiggle, Star, Sun, Wash } from './Doodles';
 import { LoadPhoto } from './LoadPhoto';
-import { formatDay, formatDot, formatTime, pageKind, shortOrder, yen } from './format';
+import { formatDay, formatDot, formatTime, pageKind, shortOrder, titleSize, yen } from './format';
 import { clampPage, countMine, loadPurchased, printPageCount, savePurchased, swipeDir, totalPages, visiblePages } from './paging';
 import './diary.css';
 
@@ -24,7 +24,7 @@ function Cover({ album, page, C }: { album: Album; page: Page; C: CopyT }) {
       <Wash color="yellow" style={{ right: '-12cqw', bottom: '-8cqw', width: '70cqw', height: '60cqw' }} />
       <Confetti className="cf" style={{ right: '6cqw', top: '6cqw', width: '28cqw' }} />
       <div className="note vol">{C.albumTitle.join('')} ・ {C.vol}{p ? ` ・ ${formatDot(p.takenAt)}` : ''}</div>
-      <h1 style={{ fontSize: album.event.name.length > 12 ? '9cqw' : '12cqw' }}>{album.event.name}</h1>
+      <h1 style={{ fontSize: `${titleSize(album.event.name, 12)}cqw` }}>{album.event.name}</h1>
       {p && <LoadPhoto src={p.url} mine={!!p.mine} tilt={2.5} tape ratio="5 / 4" />}
       <div className="note evn">{C.endStats(album.stats.guests, album.stats.photos)}</div>
       <Heart style={{ right: '6cqw', top: '44cqw', width: '12cqw', '--df': 'var(--h-orange)' } as CSSProperties} />

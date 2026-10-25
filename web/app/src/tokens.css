@@ -30,8 +30,9 @@
   --h-orange-t: #ffeadb;
   --h-purple-t: #efe9fb;
   --h-line: #c9c8d0;
-  --f-klee: "Klee One", "Zen Kurenaido", "Hiragino Mincho ProN", "Yu Mincho", serif;
-  --f-note: "Yomogi", "Klee One", "Hiragino Maru Gothic ProN", cursive;
+  /* 見出し・ボタン・数字・ページのひとこと用 / 本文・ラベル・フォーム用 */
+  --f-head: "Kiwi Maru", "Zen Maru Gothic", "Hiragino Maru Gothic ProN", sans-serif;
+  --f-text: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
 
   --page-bg: #ffffff;
   --page-ink: var(--h-ink);
@@ -40,8 +41,7 @@
   --page-soft: #f3f4f6;
   --line-w: 2px;
   --radius: 14px;
-  --f-heading: var(--f-klee);
-  --btn-bg: #ffffff;
+    --btn-bg: #ffffff;
   --btn-ink: var(--h-ink);
   --btn-active: var(--h-blue);
   --danger: #c0504d;

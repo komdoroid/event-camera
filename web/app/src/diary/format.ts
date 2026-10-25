@@ -27,3 +27,14 @@ export function pageKind(layout: string, count: number): PageKind {
   if (layout === 'cover' || layout === 'full' || layout === 'duo' || layout === 'grid') return layout;
   return count <= 1 ? 'full' : count === 2 ? 'duo' : 'grid';
 }
+
+/**
+ * 長い題名を1行に近づけるための文字サイズ(cqw)。baseは通常のサイズ。
+ * 8字まではそのまま、9〜12字は1行に収まる大きさ、13字以上はそれより小さくしない(2行まで)。
+ */
+export function titleSize(name: string, base: number): number {
+  const n = [...name].length;
+  if (n <= 8) return base;
+  const fit = n <= 12 ? 86 / n : 7.2;
+  return Math.round(Math.min(base, fit) * 10) / 10;
+}
