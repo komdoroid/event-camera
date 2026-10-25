@@ -249,3 +249,20 @@
 - T17 完了（`bfcfb2b`）: 取り込み用リンク・ペイロード単体・管理用リンクを貼り付けて追加。改行と空白は無視する。追加の前に、ホストの鍵を API で確かめる。ハッシュの `#t=` も、確認できるまで保存しない（T13 の軽微な問題を解消）
 - T18 QA 合格（回帰テストすべて、新しい `e2e/host-link.mjs`）。見た目の修正のあと、本番に反映した（Version 7c16c91d）。本番で、改行入りのリンクを貼り付けて4件が追加されることを確認した
 - [軽微・未対応] `/host#import=` をハッシュで開くほうは、鍵を確かめずに追加する
+
+## T19〜T23: 全体設計（docs/design.md）の P0（2026-10-25 承認）
+共通の API の約束（T19 と T20a で合わせる）
+- `kind`: `birthday | party | reunion | trip | company | wedding | other`（既定 `other`）。`message`: 文字列 140字まで、または null
+- `POST /api/events` `{name, shotLimit?, kind?, message?}`。不正な kind や長すぎる message は 400
+- `GET /api/events/:id` に `kind`・`message`・`coverPhotoId`（現像済み、または正しい Bearer のとき。最初にアップロードされた写真。ないときは null）を追加。正しい Bearer があれば `sales: {digital, print, revenue}` も返す（鍵がなければ項目ごと出さない）
+- `GET /api/events/:id/album?guestId=…`: 写真ごとに `mine: boolean`、`event` に `kind`・`message`
+- クライアント: `getEvent(id, hostToken?)`、`getAlbum(eventId, guestId?)`、`createEvent({name, shotLimit?, kind?, message?})`
+
+| ID | 担当 | 依存 | 内容 | 範囲 |
+| --- | --- | --- | --- | --- |
+| T19 | backend-dev | - | 上の API とマイグレーション 0002、テスト | `api/` |
+| T20a | frontend-dev | - | API クライアントの型・http・モックを上に合わせる | `web/app/src/api/` |
+| T20b | frontend-dev | T20a | ホスト側の P0（design.md 3・4・5）、アプリ名・manifest | `host/`, `pages/HostPages.tsx`, `lib/`, `public/`, `index.html`, `App.tsx` |
+| T21 | frontend-dev | T20a | ゲスト側の P0（design.md 2、文言の種類別） | `diary/`, `camera/`, `pages/GuestPage.tsx`, `index.css`, `tokens.css` |
+| T22 | qa-tester | T19〜T21 | 回帰と新機能、375px、本番のスモーク | `tests/` |
+| T23 | reviewer | T19〜T21 | デモを壊すもの・鍵の漏れ・設計とのズレ | 読み取りのみ |
